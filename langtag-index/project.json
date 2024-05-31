@@ -1,0 +1,32 @@
+{
+  "name": "langtag-index",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "langtag-index/src",
+  "projectType": "library",
+  "release": {
+    "version": {
+      "generatorOptions": {
+        "packageRoot": "dist\\{projectRoot}",
+        "currentVersionResolver": "git-tag"
+      }
+    }
+  },
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/vite:build",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/langtag-index",
+        "main": "langtag-index/src/index.ts",
+        "tsConfig": "langtag-index/tsconfig.lib.json",
+        "assets": ["langtag-index/*.md"]
+      }
+    },
+    "nx-release-publish": {
+      "options": {
+        "packageRoot": "dist\\{projectRoot}"
+      }
+    }
+  }
+}
