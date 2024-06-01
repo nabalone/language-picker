@@ -1,6 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { useState } from 'react';
-import { searchForLanguage } from '../../../index/search';
+import { searchForLanguage } from '@language-picker/ethnolib';
 
 export function App() {
   const [langSearchString, setLangSearchString] = useState('tok pisin');

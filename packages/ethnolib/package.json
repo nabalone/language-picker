@@ -1,7 +1,9 @@
 {
   "name": "@language-picker/ethnolib",
   "version": "0.0.1",
-  "dependencies": {},
+  "dependencies": {
+    "fuse.js": "^7.0.0"
+  },
   "main": "./index.js",
   "module": "./index.mjs",
   "typings": "./index.d.ts"
