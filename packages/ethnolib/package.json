@@ -4,7 +4,5 @@
   "dependencies": {
     "fuse.js": "^7.0.0"
   },
-  "main": "./index.js",
-  "module": "./index.mjs",
   "typings": "./index.d.ts"
 }
