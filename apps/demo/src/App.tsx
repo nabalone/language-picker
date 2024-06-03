@@ -1,9 +1,13 @@
 import reactLogo from './assets/react.svg';
 import viteLogo from '/vite.svg';
 import './App.css';
-import { Button } from '@tuskdesign/xbuttons';
+import { useState } from 'react';
+import { searchForLanguage } from '@tuskdesign/xbuttons';
+
 
 function App() {
+  const [langSearchString, setLangSearchString] = useState('tok pisin');
+
   return (
     <>
       <div>
@@ -16,7 +20,6 @@ function App() {
       </div>
       <h1>Vite + React</h1>
       <div className="card">
-        <Button />
         <p>
           Edit <code>src/App.tsx</code> and save to test HMR
         </p>
@@ -24,6 +27,9 @@ function App() {
       <p className="read-the-docs">
         Click on the Vite and React logos to learn more
       </p>
+      
+      <input type="text" value={langSearchString} onChange={(e) => setLangSearchString(e.target.value)} />
+      <p>{searchForLanguage(langSearchString)}</p>
     </>
   );
 }
