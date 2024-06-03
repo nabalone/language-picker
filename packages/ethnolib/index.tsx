@@ -41,5 +41,4 @@ export function searchForLanguage(queryString: string) {
   console.log(results);
 
   return (results.map((r) => r.item.full).join(", "));
-// return "hello";
 }

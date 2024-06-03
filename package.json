@@ -1,5 +1,5 @@
 {
-  "name": "@tuskdesign/source",
+  "name": "@languagepicker/source",
   "workspaces": [
     "packages/*",
     "apps/*"
@@ -10,7 +10,7 @@
   "scripts": {},
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "TODO",
   "devDependencies": {
     "nx": "19.1.2"
   },
