@@ -1,4 +1,4 @@
-// type LanguageCardData = {
+// type LanguageData = {
 //     autonym: string;
 //     code: string;
 //     regions: string[];

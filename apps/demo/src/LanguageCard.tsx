@@ -2,12 +2,11 @@
 import { css } from "@emotion/react";
 import { EthnolibCard } from "./EthnolibCard";
 import { Typography, useTheme } from "@mui/material";
-import { LanguageCardData } from "@languagepicker/ethnolib";
+import { LanguageData } from "@languagepicker/ethnolib";
 
 export const LanguageCard: React.FunctionComponent<{
-  languageCardData: LanguageCardData;
+  languageCardData: LanguageData;
 }> = (props) => {
-  console.log("props", props.languageCardData);
   const theme = useTheme();
   return (
     <EthnolibCard

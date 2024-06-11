@@ -2,7 +2,7 @@ import Fuse from 'fuse.js';
 
 import langTags from './langtags.json';
 
-export type LanguageCardData = {
+export type LanguageData = {
   autonym: string;
   code: string;
   regions: string[];
@@ -46,12 +46,12 @@ export function searchForLanguage(queryString: string) {
   const fuse = new Fuse(langTags2, fuseOptions);
 
   const results = fuse.search(queryString);
-  console.log(results.map((r) => languageEntryToLanguageCardData(r.item)) as LanguageCardData[]);
+  console.log(results.map((r) => languageEntryToLanguageCardData(r.item)) as LanguageData[]);
 
-  return (results.map((r) => languageEntryToLanguageCardData(r.item)) as LanguageCardData[]);
+  return (results.map((r) => languageEntryToLanguageCardData(r.item)) as LanguageData[]);
 }
 
-function languageEntryToLanguageCardData(entry: any): LanguageCardData {
+function languageEntryToLanguageCardData(entry: any): LanguageData {
   const regionsList = [entry.region] as string[];
   if (entry.regions) {
     regionsList.push(...entry.regions);
