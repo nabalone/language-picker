@@ -2,7 +2,7 @@
 // todo eslint
 /** @jsxImportSource @emotion/react */
 import { css } from "@emotion/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { LanguageData, searchForLanguage } from "@languagepicker/ethnolib";
 import { LanguageCard } from "./LanguageCard";
 import { CardTree } from "./CardTree";
@@ -17,34 +17,107 @@ import {
   createTheme,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
-import { ScriptData } from "./ScriptCard";
+import { ScriptCard, ScriptData } from "./ScriptCard";
+import { ComboBox } from "./ComboBox";
+
+enum NodeType {
+  root = "root",
+  Language = "language",
+  Script = "script",
+}
 
 export type LanguageTreeNode = {
-  nodeData: LanguageData | ScriptData;
+  nodeData: LanguageData | ScriptData | null;
   id: string;
   nodeGeneology: string[]; // the ids of the path to this node
-
+  nodeType: NodeType;
   // its possible we want to enforce that the user always selects down to a leaf node,
   //  in which case this would be unneccessary and we could just check for the presence
   //  of children. But I think that's not the case and some choices will be optional/have fallbacks
-  requiresFurtherSelection: boolean; 
+  requiresFurtherSelection: boolean;
   children: LanguageTreeNode[];
-}
+};
 
+// TODO casing?
+// TODO what if no results?
+// TODO should the root be in the geneology?
+function searchAndCreateTree(searchString: string): LanguageTreeNode {
+  const rootId = "root";
+  const root: LanguageTreeNode = {
+    nodeData: null,
+    id: rootId,
+    nodeGeneology: [],
+    nodeType: NodeType.root,
+    requiresFurtherSelection: true,
+    children: [],
+  };
+  const languageList = searchForLanguage(searchString);
+  for (const language of languageList) {
+    const languageNode: LanguageTreeNode = {
+      nodeData: language,
+      id: language.code,
+      nodeGeneology: [language.code],
+      nodeType: NodeType.Language,
+      requiresFurtherSelection: true,
+      children: [],
+    };
+    root.children.push(languageNode);
+    const scriptNodes = language.scripts?.map((script) => {
+      const scriptData = {
+        code: script,
+      } as ScriptData;
+      return {
+        nodeData: scriptData,
+        id: script,
+        nodeGeneology: [language.code, script],
+        nodeType: NodeType.Script,
+        requiresFurtherSelection: false,
+        children: [],
+      } as LanguageTreeNode;
+    });
+    languageNode.children = scriptNodes;
+  }
+  return root;
+}
 
 function App() {
   const [langSearchString, setLangSearchString] = useState("tok pisin");
-  const [languageDataTree, setLanguageDataTree] = useState([]);
-  const [selectedNodeGeneology, setSelectedNodeGeneology] = useState([]);
+  const [languageDataTree, setLanguageDataTree] = useState<LanguageTreeNode>();
+  const [selectedNodeGeneology, setSelectedNodeGeneology] = useState<string[]>(
+    []
+  );
 
-  function selectNode(nodeGeneology: string[]) : void {
-    setSelectedNodeGeneology(nodeGeneology);
+  function selectNode(node: LanguageTreeNode): void {
+    //  TODO if there is no node, what should this do?
+    if (node) {
+      setSelectedNodeGeneology(node.nodeGeneology);
+    }
   }
 
-  const canSubmit =
-    !getNodeByGeneology(selectedNodeList)?.requiresFurtherSelection;
-  
-    useEffect(() => {
+  function getNodeByGeneology(
+    geneology: string[]
+  ): LanguageTreeNode | undefined {
+    if (!languageDataTree) {
+      return undefined;
+    }
+    if (geneology.length === 0) {
+      return languageDataTree.children[0];
+    }
+    let currentNode = languageDataTree.children[0];
+    for (const id of geneology) {
+      const nextNode = currentNode.children.find((child) => child.id === id);
+      if (!nextNode) {
+        return undefined;
+      }
+      currentNode = nextNode;
+    }
+    return currentNode;
+  }
+
+  const canSubmit = !getNodeByGeneology(selectedNodeGeneology)
+    ?.requiresFurtherSelection;
+
+  useEffect(() => {
     setLanguageDataTree(searchAndCreateTree(langSearchString));
   }, [langSearchString]); // TODO is this the correct use of useEffect? I'm pretty sure there's a better way. Populate only on [], and then call a method after a delay?
   // TODO set up a time delay so typing doesn't immediately trigger it
@@ -99,6 +172,40 @@ function App() {
               </Typography>
             </Toolbar>
           </AppBar>
+          <ComboBox
+            getItems={(inputValue) => searchAndCreateTree(inputValue).children}
+            itemToString={(item) => item.id ?? "xxxx"}
+            //  TODO
+            setSelectedItem={selectNode}
+            getListItemContent={(item) => {
+              // const itemIsSelected = selectedNodeGeneology.includes(item.id);
+              const itemIsSelected = true;
+              return (
+                <>
+                  <LanguageCard
+                    languageCardData={item.nodeData}
+                    // childrenData={[]}
+                    isSelected={true}
+                    // isSelected={itemIsSelected}
+                    // TODO colors
+                    colorWhenNotSelected={theme.palette.primary.light}
+                    colorWhenSelected={theme.palette.primary.dark}
+                  ></LanguageCard>
+                  {itemIsSelected &&
+                    item.children.map((scriptNode: LanguageTreeNode) => {
+                      return <ScriptCard 
+                      scriptData={scriptNode.nodeData as ScriptData} 
+                      isSelected={true}
+                      // TODO colors
+                      colorWhenNotSelected={theme.palette.secondary.light}
+                      colorWhenSelected={theme.palette.secondary.dark}
+
+                      />;
+                    })}
+                </>
+              );
+            }}
+          ></ComboBox>
           <label htmlFor="search-bar">
             <Typography>Search by name, code, or country</Typography>
           </label>
@@ -122,7 +229,11 @@ function App() {
             value={langSearchString}
             onChange={(e) => setLangSearchString(e.target.value)}
           />
-          <CardTree data={languageDataTree} selectedNodeGeneology={ selectedNodeGeneology } selectNode={ selectNode }></CardTree>
+          {/* <CardTree
+            data={languageDataTree}
+            selectedNodeGeneology={selectedNodeGeneology}
+            selectNode={selectNode}
+          ></CardTree> */}
         </div>
       </div>
     </ThemeProvider>
@@ -146,11 +257,7 @@ export default App;
 // how does sx work?
 // check the language search of blorg to see how to debounce searching
 
-
-
-
 // Who should own the languageDataTree state? the CardTree? and then when we setCanSubmit, we need to make sure not to rerender card tree, annoying
-// if app owns languageDataTree, then we setLanguageDataCardTree and then the whole thing rerenders, 
+// if app owns languageDataTree, then we setLanguageDataCardTree and then the whole thing rerenders,
 
 // IF we just use state for the whole thing, does the whole thing rerender each time anyway? I feel like toggle should be simpler...
-

@@ -60,7 +60,7 @@ function languageEntryToLanguageCardData(entry: any): LanguageData {
     autonym: entry.name,
     code: entry.tag,
     regions: regionsList,
-    names: entry.names,
-    scripts: entry.script
+    names: entry.names ?? [entry.name],
+    scripts: [entry.script]
   };
 }

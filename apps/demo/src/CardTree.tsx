@@ -1,14 +1,15 @@
 import { LanguageCard } from "./LanguageCard";
 import { css } from '@emotion/react';
 import { LanguageData } from '@languagepicker/ethnolib';
+import { LanguageTreeNode } from "./App";
 
 export const CardTree: React.FunctionComponent<{
-    data: LanguageData[];
+    data: LanguageTreeNode;
 }> = props => {
     console.log('cardtree data is ', props.data);
     return (
         <div>
-            { props.data.map((node: LanguageTreeNode) => 
+            { props.data.children.map((node: LanguageTreeNode) => 
                 <LanguageCard 
                     css={css`
                     margin: 10px;

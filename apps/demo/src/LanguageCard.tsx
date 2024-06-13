@@ -1,20 +1,28 @@
 /** @jsxImportSource @emotion/react */
 import { css } from "@emotion/react";
 import { EthnolibCard } from "./EthnolibCard";
-import { Typography, useTheme } from "@mui/material";
+import { Typography } from "@mui/material";
 import { LanguageData } from "@languagepicker/ethnolib";
 
 export const LanguageCard: React.FunctionComponent<{
   languageCardData: LanguageData;
+  // childrenData: ScriptData[];
+  isSelected: boolean;
+  colorWhenNotSelected: string;
+  colorWhenSelected: string;
 }> = (props) => {
-  const theme = useTheme();
+  // const childrenWhenSelected =  props.childrenData.map((scriptData) => (
+  //   <ScriptCard scriptData={scriptData} />
+  // ));
   return (
+    <>
     <EthnolibCard
-    sx={{ bgcolor: (theme) => theme.palette.primary.light }} 
       css={css`
         width: 500px;
         position: relative;
       `}
+      // isSelected={props.isSelected}
+      // childrenWhenSelected={childrenWhenSelected}
       {...props}
     >
       <div css={css``}></div>
@@ -40,5 +48,5 @@ export const LanguageCard: React.FunctionComponent<{
         {props.languageCardData.names?.join(", ")}
       </Typography>
     </EthnolibCard>
-  );
-};
+  </>
+)};
