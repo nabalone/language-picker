@@ -11,6 +11,8 @@ import {
   AppBar,
   Icon,
   InputAdornment,
+  List,
+  ListItem,
   ThemeProvider,
   Toolbar,
   Typography,
@@ -18,10 +20,11 @@ import {
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import { ScriptCard, ScriptData } from "./ScriptCard";
-import { ComboBox } from "./ComboBox";
+import { useCombobox } from "downshift";
+import { cx } from "@emotion/css";
 
 enum NodeType {
-  root = "root",
+  // root = "root",
   Language = "language",
   Script = "script",
 }
@@ -40,19 +43,9 @@ export type LanguageTreeNode = {
 
 // TODO casing?
 // TODO what if no results?
-// TODO should the root be in the geneology?
-function searchAndCreateTree(searchString: string): LanguageTreeNode {
-  const rootId = "root";
-  const root: LanguageTreeNode = {
-    nodeData: null,
-    id: rootId,
-    nodeGeneology: [],
-    nodeType: NodeType.root,
-    requiresFurtherSelection: true,
-    children: [],
-  };
+function searchAndCreateTree(searchString: string): LanguageTreeNode[] {
   const languageList = searchForLanguage(searchString);
-  for (const language of languageList) {
+  const languageNodes = languageList.map((language) => {
     const languageNode: LanguageTreeNode = {
       nodeData: language,
       id: language.code,
@@ -61,7 +54,6 @@ function searchAndCreateTree(searchString: string): LanguageTreeNode {
       requiresFurtherSelection: true,
       children: [],
     };
-    root.children.push(languageNode);
     const scriptNodes = language.scripts?.map((script) => {
       const scriptData = {
         code: script,
@@ -76,16 +68,33 @@ function searchAndCreateTree(searchString: string): LanguageTreeNode {
       } as LanguageTreeNode;
     });
     languageNode.children = scriptNodes;
-  }
-  return root;
+    return languageNode;
+  });
+  return languageNodes;
 }
 
 function App() {
   const [langSearchString, setLangSearchString] = useState("tok pisin");
-  const [languageDataTree, setLanguageDataTree] = useState<LanguageTreeNode>();
+  const [languageDataTree, setLanguageDataTree] = useState<LanguageTreeNode[]>(
+    []
+  ); // This is a list of the top level nodes. There is no root node
   const [selectedNodeGeneology, setSelectedNodeGeneology] = useState<string[]>(
     []
   );
+
+  const combobox = useCombobox({
+    items: languageDataTree,
+    onInputValueChange({ inputValue }) {
+      setLanguageDataTree(searchAndCreateTree(inputValue));
+      setSelectedNodeGeneology([]);
+    },
+    selectedItem: null,
+    onSelectedItemChange({ selectedItem: newSelectedItem }) {
+      selectNode(newSelectedItem);
+    }
+
+
+  });
 
   function selectNode(node: LanguageTreeNode): void {
     //  TODO if there is no node, what should this do?
@@ -94,22 +103,31 @@ function App() {
     }
   }
 
+  function isSelectedNode(node: LanguageTreeNode): boolean {
+    return selectedNodeGeneology.includes(node.id);
+  }
+
   function getNodeByGeneology(
     geneology: string[]
   ): LanguageTreeNode | undefined {
-    if (!languageDataTree) {
+    // to make typescript happy
+    if (
+      !languageDataTree ||
+      languageDataTree.length == 0 ||
+      !geneology ||
+      geneology?.length
+    ) {
       return undefined;
     }
-    if (geneology.length === 0) {
-      return languageDataTree.children[0];
-    }
-    let currentNode = languageDataTree.children[0];
+
+    let currentNodeList = languageDataTree;
+    let currentNode = undefined;
     for (const id of geneology) {
-      const nextNode = currentNode.children.find((child) => child.id === id);
-      if (!nextNode) {
+      currentNode = currentNodeList.find((node) => node.id === id);
+      if (!currentNode) {
         return undefined;
       }
-      currentNode = nextNode;
+      currentNodeList = currentNode.children;
     }
     return currentNode;
   }
@@ -172,7 +190,7 @@ function App() {
               </Typography>
             </Toolbar>
           </AppBar>
-          <ComboBox
+          {/* <ComboBox
             getItems={(inputValue) => searchAndCreateTree(inputValue).children}
             itemToString={(item) => item.id ?? "xxxx"}
             //  TODO
@@ -193,19 +211,25 @@ function App() {
                   ></LanguageCard>
                   {itemIsSelected &&
                     item.children.map((scriptNode: LanguageTreeNode) => {
-                      return <ScriptCard 
-                      scriptData={scriptNode.nodeData as ScriptData} 
-                      isSelected={true}
-                      // TODO colors
-                      colorWhenNotSelected={theme.palette.secondary.light}
-                      colorWhenSelected={theme.palette.secondary.dark}
-
-                      />;
+                      // TODO this shouldn't happen
+                      if (!scriptNode.nodeData) {
+                        console.error("unexpected node: ", scriptNode);
+                        return <></>;
+                      }
+                      return (
+                        <ScriptCard
+                          scriptData={scriptNode.nodeData as ScriptData}
+                          isSelected={true}
+                          // TODO colors
+                          colorWhenNotSelected={theme.palette.secondary.light}
+                          colorWhenSelected={theme.palette.secondary.dark}
+                        />
+                      );
                     })}
                 </>
               );
             }}
-          ></ComboBox>
+          ></ComboBox> */}
           <label htmlFor="search-bar">
             <Typography>Search by name, code, or country</Typography>
           </label>
@@ -220,15 +244,72 @@ function App() {
                   <Icon component={SearchIcon} />{" "}
                 </InputAdornment>
               ),
+              ...combobox.getInputProps({ refKey: "inputRef" }), // TODO what is this refKey?
             }}
             id="search-bar"
             variant="filled"
             size="small"
             margin="normal"
             //  fullWidth
-            value={langSearchString}
-            onChange={(e) => setLangSearchString(e.target.value)}
+            // value={langSearchString}
+            // onChange={(e) => setLangSearchString(e.target.value)}
           />
+          {/* TODO move this to a new component? */}
+          <List
+            className={cx(
+              !languageDataTree.length && "hidden",
+              "!absolute bg-white w-72 shadow-md max-h-80 overflow-scroll"
+            )}
+            {...combobox.getMenuProps()}
+          >
+            {languageDataTree.map((languageNode, index) => {
+              if (languageNode.nodeType !== NodeType.Language) {
+                console.error("unexpected node is not language node: ", languageNode.id);
+                return <></>;
+              }
+              return (
+                <ListItem
+                  // className={cx(
+                  //   highlightedIndex === index && "bg-blue-300",
+                  //   selectedItem === item && "font-bold",
+                  //   "py-2 px-3 shadow-sm"
+                  // )}
+                  key={languageNode.id}
+                  {...combobox.getItemProps({
+                    item: languageNode,
+                    index,
+                  })}
+                >
+                  <LanguageCard
+                    languageCardData={languageNode.nodeData as LanguageData}
+                    // childrenData={[]}
+                    isSelected={true}
+                    // isSelected={itemIsSelected}
+                    // TODO colors
+                    colorWhenNotSelected={theme.palette.primary.light}
+                    colorWhenSelected={theme.palette.primary.dark}
+                  ></LanguageCard>
+                  {isSelectedNode(languageNode) &&
+                    languageNode.children.map((scriptNode: LanguageTreeNode) => {
+                      // TODO this shouldn't happen
+                      if (scriptNode.nodeType !== NodeType.Script) {
+                        console.error("unexpected node is not script: ", scriptNode.id);
+                        return <></>;
+                      }
+                      return (
+                        <ScriptCard
+                          scriptData={scriptNode.nodeData as ScriptData}
+                          isSelected={true}
+                          // TODO colors
+                          colorWhenNotSelected={theme.palette.secondary.light}
+                          colorWhenSelected={theme.palette.secondary.dark}
+                        />
+                      );
+                    })}
+                </ListItem>
+              );
+            })}
+          </List>
           {/* <CardTree
             data={languageDataTree}
             selectedNodeGeneology={selectedNodeGeneology}
@@ -261,3 +342,6 @@ export default App;
 // if app owns languageDataTree, then we setLanguageDataCardTree and then the whole thing rerenders,
 
 // IF we just use state for the whole thing, does the whole thing rerender each time anyway? I feel like toggle should be simpler...
+
+// TODO jeni bister email - searching dialect names should pull up the language also
+// maybe a "Variants include" field?
