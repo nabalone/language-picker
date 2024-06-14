@@ -5,7 +5,7 @@ import React, { PropsWithChildren } from "react";
 
 interface EthnolibCardProps {
   isSelected: boolean;
-//   childrenWhenSelected: React.ReactNode[];
+  //   childrenWhenSelected: React.ReactNode[];
   colorWhenNotSelected: string;
   colorWhenSelected: string;
 }

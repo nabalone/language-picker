@@ -22,6 +22,7 @@ import { ScriptCard, ScriptData } from "./ScriptCard";
 import { useCombobox } from "downshift";
 import { cx } from "@emotion/css";
 import React from "react";
+import { COLORS } from "./Colors";
 
 enum NodeType {
   // root = "root",
@@ -83,32 +84,33 @@ function App() {
   );
 
   const stateReducer = React.useCallback((state, actionAndChanges) => {
-    const {type, changes} = actionAndChanges
+    const { type, changes } = actionAndChanges;
     switch (type) {
-      case useCombobox.stateChangeTypes.InputChange:
+      case useCombobox.stateChangeTypes.InputChange: {
+        setSelectedNodeGeneology([]); // unselect everything
+        console.log("changes", changes);
         return {
           // return normal changes.
-          // TODO
           ...changes,
-        }
+          items: searchAndCreateTree(changes.inputValue),
+        };
+      }
       case useCombobox.stateChangeTypes.ItemClick:
-      case useCombobox.stateChangeTypes.InputKeyDownEnter: 
-        {selectNode(changes.selectedItem);
+      case useCombobox.stateChangeTypes.InputKeyDownEnter: {
+        selectNode(changes.selectedItem);
         return state; //Discard all the other proposed changes
-        }
+      }
       default:
-        return changes // otherwise business as usual.
+        return changes; // otherwise business as usual.
     }
-  }, [])
+  }, []);
 
   const combobox = useCombobox({
     items: languageDataTree,
     onInputValueChange({ inputValue }) {
       setLanguageDataTree(searchAndCreateTree(inputValue));
-      setSelectedNodeGeneology([]);
     },
-    selectedItem: null,
-    stateReducer
+    stateReducer,
   });
 
   function selectNode(node: LanguageTreeNode): void {
@@ -155,17 +157,7 @@ function App() {
   }, [langSearchString]); // TODO is this the correct use of useEffect? I'm pretty sure there's a better way. Populate only on [], and then call a method after a delay?
   // TODO set up a time delay so typing doesn't immediately trigger it
   const theme = createTheme({
-    palette: {
-      primary: {
-        light: "#E9EDFF",
-        main: "#BAC5FF",
-        dark: "#4D5DAF",
-      },
-      secondary: {
-        light: "#F9F9F9",
-        main: "#DADADA",
-      },
-    },
+    // TODO theme?
   });
 
   return (
@@ -185,7 +177,7 @@ function App() {
           css={css`
             width: 1000px;
             height: 1000px;
-            background-color: ${theme.palette.secondary.light};
+            background-color: ${COLORS.greys[0]};
             border-radius: 10px;
             position: relative;
             margin-left: auto;
@@ -196,7 +188,7 @@ function App() {
             position="static"
             css={css`
               background-color: white;
-              margin-bottom: 30px;
+              // margin-bottom: 30px;
             `}
           >
             <Toolbar>
@@ -245,97 +237,108 @@ function App() {
               );
             }}
           ></ComboBox> */}
-          <label htmlFor="search-bar">
-            <Typography>Search by name, code, or country</Typography>
-          </label>
-          <TextField
-            InputLabelProps={{
-              shrink: true,
-            }}
-            // label="Search by name, code, or country"
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="start">
-                  <Icon component={SearchIcon} />{" "}
-                </InputAdornment>
-              ),
-              ...combobox.getInputProps({ refKey: "inputRef" }), // TODO what is this refKey?
-            }}
-            id="search-bar"
-            variant="filled"
-            size="small"
-            margin="normal"
-            //  fullWidth
-            // value={langSearchString}
-            // onChange={(e) => setLangSearchString(e.target.value)}
-          />
-          {/* TODO move this to a new component? */}
-          <List
-            className={cx(
-              !languageDataTree.length && "hidden",
-              "!absolute bg-white w-72 shadow-md max-h-80 overflow-scroll"
-            )}
-            {...combobox.getMenuProps()}
+          <div
+            id="left-pane"
+            css={css`
+              padding: 10px;
+              width: 50%;
+            `}
           >
-            {languageDataTree.map((languageNode, index) => {
-              if (languageNode.nodeType !== NodeType.Language) {
-                console.error("unexpected node is not language node: ", languageNode.id);
-                return <></>;
-              }
-              return (
-                <ListItem
-                  // className={cx(
-                  //   highlightedIndex === index && "bg-blue-300",
-                  //   selectedItem === item && "font-bold",
-                  //   "py-2 px-3 shadow-sm"
-                  // )}
-                  key={languageNode.id}
-                  {...combobox.getItemProps({
-                    item: languageNode,
-                    index,
-                  })}
-                >
-                  <LanguageCard
-                    languageCardData={languageNode.nodeData as LanguageData}
-                    // childrenData={[]}
-                    isSelected={true}
-                    // isSelected={itemIsSelected}
-                    // TODO colors
-                    colorWhenNotSelected={theme.palette.primary.light}
-                    colorWhenSelected={theme.palette.primary.dark}
-                  ></LanguageCard>
-                  {isSelectedNode(languageNode) &&
-                    languageNode.children.map((scriptNode: LanguageTreeNode) => {
-                      // TODO this shouldn't happen
-                      if (scriptNode.nodeType !== NodeType.Script) {
-                        console.error("unexpected node is not script: ", scriptNode.id);
-                        return <></>;
-                      }
-                      return (
-                        <ScriptCard
-                          scriptData={scriptNode.nodeData as ScriptData}
-                          isSelected={true}
-                          // TODO colors
-                          colorWhenNotSelected={theme.palette.secondary.light}
-                          colorWhenSelected={theme.palette.secondary.dark}
-                        />
-                      );
+            <label htmlFor="search-bar">
+              <Typography>Search by name, code, or country</Typography>
+            </label>
+            <TextField
+              InputLabelProps={{
+                shrink: true,
+              }}
+              // label="Search by name, code, or country"
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="start">
+                    <Icon component={SearchIcon} />{" "}
+                  </InputAdornment>
+                ),
+                ...combobox.getInputProps({ refKey: "inputRef" }), // TODO what is this refKey?
+              }}
+              id="search-bar"
+              variant="filled"
+              size="small"
+              margin="normal"
+              //  fullWidth
+              // value={langSearchString}
+              // onChange={(e) => setLangSearchString(e.target.value)}
+            />
+            {/* TODO move this to a new component? */}
+            <List
+              className={cx(
+                !languageDataTree.length && "hidden",
+                "!absolute bg-white w-72 shadow-md max-h-80 overflow-scroll"
+              )}
+              {...combobox.getMenuProps()}
+            >
+              {languageDataTree.map((languageNode, index) => {
+                if (languageNode.nodeType !== NodeType.Language) {
+                  console.error(
+                    "unexpected node is not language node: ",
+                    languageNode.id
+                  );
+                  return <></>;
+                }
+                return (
+                  <ListItem
+                    // TODO
+                    // className={cx(
+                    //   highlightedIndex === index && "bg-blue-300",
+                    //   selectedItem === item && "font-bold",
+                    //   "py-2 px-3 shadow-sm"
+                    // )}
+                    key={languageNode.id}
+                    {...combobox.getItemProps({
+                      item: languageNode,
+                      index,
                     })}
-                </ListItem>
-              );
-            })}
-          </List>
-          {/* <CardTree
-            data={languageDataTree}
-            selectedNodeGeneology={selectedNodeGeneology}
-            selectNode={selectNode}
-          ></CardTree> */}
+                    css={css`
+                      margin-left: 0;
+                      padding-left: 0;
+                    `}
+                  >
+                    <LanguageCard
+                      languageCardData={languageNode.nodeData as LanguageData}
+                      isSelected={isSelectedNode(languageNode)}
+                      colorWhenNotSelected={COLORS.white}
+                      colorWhenSelected={COLORS.blues[0]}
+                    ></LanguageCard>
+                    {isSelectedNode(languageNode) &&
+                      languageNode.children.map(
+                        (scriptNode: LanguageTreeNode) => {
+                          // TODO this shouldn't happen
+                          if (scriptNode.nodeType !== NodeType.Script) {
+                            console.error(
+                              "unexpected node is not script: ",
+                              scriptNode.id
+                            );
+                            return <></>;
+                          }
+                          return (
+                            <ScriptCard
+                              scriptData={scriptNode.nodeData as ScriptData}
+                              isSelected={isSelectedNode(scriptNode)}
+                              colorWhenNotSelected={COLORS.white}
+                              colorWhenSelected={COLORS.blues[1]}
+                            />
+                          );
+                        }
+                      )}
+                  </ListItem>
+                );
+              })}
+            </List>
+          </div>
         </div>
       </div>
     </ThemeProvider>
   );
 }
-// TODO set up autoformating, why is it not working
 
 export default App;
 

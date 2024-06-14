@@ -16,37 +16,36 @@ export const LanguageCard: React.FunctionComponent<{
   // ));
   return (
     <>
-    <EthnolibCard
-      css={css`
-        width: 500px;
-        position: relative;
-      `}
-      // isSelected={props.isSelected}
-      // childrenWhenSelected={childrenWhenSelected}
-      {...props}
-    >
-      <div css={css``}></div>
-      <Typography variant="h5" gutterBottom>
-        {props.languageCardData.autonym}
-      </Typography>
-      <Typography
+      <EthnolibCard
         css={css`
-          width: fit-content;
-          right: 0;
-          top: 0;
-          position: absolute;
-          margin: 16px; // what should this be? To match the padding of the card
+          position: relative;
         `}
-        variant="body2"
+        // isSelected={props.isSelected}
+        // childrenWhenSelected={childrenWhenSelected}
+        {...props}
       >
-        {props.languageCardData.code}
-      </Typography>
-      <Typography variant="h5" gutterBottom>
-        {props.languageCardData.regions?.join(", ")}
-      </Typography>
-      <Typography variant="body2">
-        {props.languageCardData.names?.join(", ")}
-      </Typography>
-    </EthnolibCard>
-  </>
-)};
+        <Typography variant="h5" gutterBottom>
+          {props.languageCardData.autonym}
+        </Typography>
+        <Typography
+          css={css`
+            width: fit-content;
+            right: 0;
+            top: 0;
+            position: absolute;
+            margin: 16px; // what should this be? To match the padding of the card
+          `}
+          variant="body2"
+        >
+          {props.languageCardData.code}
+        </Typography>
+        <Typography variant="h5" gutterBottom>
+          {props.languageCardData.regions?.join(", ")}
+        </Typography>
+        <Typography variant="body2">
+          {props.languageCardData.names?.join(", ")}
+        </Typography>
+      </EthnolibCard>
+    </>
+  );
+};
