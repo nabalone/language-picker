@@ -5,7 +5,6 @@ import { css } from "@emotion/react";
 import { useEffect, useState } from "react";
 import { LanguageData, searchForLanguage } from "@languagepicker/ethnolib";
 import { LanguageCard } from "./LanguageCard";
-import { CardTree } from "./CardTree";
 import TextField from "@mui/material/TextField";
 import {
   AppBar,
@@ -22,6 +21,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import { ScriptCard, ScriptData } from "./ScriptCard";
 import { useCombobox } from "downshift";
 import { cx } from "@emotion/css";
+import React from "react";
 
 enum NodeType {
   // root = "root",
@@ -82,6 +82,25 @@ function App() {
     []
   );
 
+  const stateReducer = React.useCallback((state, actionAndChanges) => {
+    const {type, changes} = actionAndChanges
+    switch (type) {
+      case useCombobox.stateChangeTypes.InputChange:
+        return {
+          // return normal changes.
+          // TODO
+          ...changes,
+        }
+      case useCombobox.stateChangeTypes.ItemClick:
+      case useCombobox.stateChangeTypes.InputKeyDownEnter: 
+        {selectNode(changes.selectedItem);
+        return state; //Discard all the other proposed changes
+        }
+      default:
+        return changes // otherwise business as usual.
+    }
+  }, [])
+
   const combobox = useCombobox({
     items: languageDataTree,
     onInputValueChange({ inputValue }) {
@@ -89,11 +108,7 @@ function App() {
       setSelectedNodeGeneology([]);
     },
     selectedItem: null,
-    onSelectedItemChange({ selectedItem: newSelectedItem }) {
-      selectNode(newSelectedItem);
-    }
-
-
+    stateReducer
   });
 
   function selectNode(node: LanguageTreeNode): void {
@@ -345,3 +360,5 @@ export default App;
 
 // TODO jeni bister email - searching dialect names should pull up the language also
 // maybe a "Variants include" field?
+
+// TODO highlighting...
