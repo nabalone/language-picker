@@ -24,15 +24,6 @@ export const EthnolibCard: React.FunctionComponent<
       >
         <CardContent>{props.children}</CardContent>
       </Card>
-      {/* {props.isSelected && 
-        <EthnolibCard
-            isSelected={false} // TODO
-
-        >
-            <p>hi</p>
-            {props.childrenWhenSelected} 
-            {/* // TODO flexbox these into a row */}
-      {/* </EthnolibCard>} */}
     </>
   );
 };

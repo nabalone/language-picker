@@ -25,7 +25,6 @@ import React from "react";
 import { COLORS } from "./Colors";
 
 enum NodeType {
-  // root = "root",
   Language = "language",
   Script = "script",
 }
@@ -197,46 +196,6 @@ function App() {
               </Typography>
             </Toolbar>
           </AppBar>
-          {/* <ComboBox
-            getItems={(inputValue) => searchAndCreateTree(inputValue).children}
-            itemToString={(item) => item.id ?? "xxxx"}
-            //  TODO
-            setSelectedItem={selectNode}
-            getListItemContent={(item) => {
-              // const itemIsSelected = selectedNodeGeneology.includes(item.id);
-              const itemIsSelected = true;
-              return (
-                <>
-                  <LanguageCard
-                    languageCardData={item.nodeData}
-                    // childrenData={[]}
-                    isSelected={true}
-                    // isSelected={itemIsSelected}
-                    // TODO colors
-                    colorWhenNotSelected={theme.palette.primary.light}
-                    colorWhenSelected={theme.palette.primary.dark}
-                  ></LanguageCard>
-                  {itemIsSelected &&
-                    item.children.map((scriptNode: LanguageTreeNode) => {
-                      // TODO this shouldn't happen
-                      if (!scriptNode.nodeData) {
-                        console.error("unexpected node: ", scriptNode);
-                        return <></>;
-                      }
-                      return (
-                        <ScriptCard
-                          scriptData={scriptNode.nodeData as ScriptData}
-                          isSelected={true}
-                          // TODO colors
-                          colorWhenNotSelected={theme.palette.secondary.light}
-                          colorWhenSelected={theme.palette.secondary.dark}
-                        />
-                      );
-                    })}
-                </>
-              );
-            }}
-          ></ComboBox> */}
           <div
             id="left-pane"
             css={css`
@@ -251,7 +210,6 @@ function App() {
               InputLabelProps={{
                 shrink: true,
               }}
-              // label="Search by name, code, or country"
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="start">
@@ -308,27 +266,48 @@ function App() {
                       colorWhenNotSelected={COLORS.white}
                       colorWhenSelected={COLORS.blues[0]}
                     ></LanguageCard>
-                    {isSelectedNode(languageNode) &&
-                      languageNode.children.map(
-                        (scriptNode: LanguageTreeNode) => {
-                          // TODO this shouldn't happen
-                          if (scriptNode.nodeType !== NodeType.Script) {
-                            console.error(
-                              "unexpected node is not script: ",
-                              scriptNode.id
-                            );
-                            return <></>;
-                          }
-                          return (
-                            <ScriptCard
-                              scriptData={scriptNode.nodeData as ScriptData}
-                              isSelected={isSelectedNode(scriptNode)}
-                              colorWhenNotSelected={COLORS.white}
-                              colorWhenSelected={COLORS.blues[1]}
-                            />
-                          );
-                        }
+                    <List
+                      className={cx(
+                        !languageDataTree.length && "hidden",
+                        "!absolute bg-white w-72 shadow-md max-h-80 overflow-scroll"
                       )}
+                      // TODO
+                      // {...combobox.getMenuProps()}
+                    >
+                      {isSelectedNode(languageNode) &&
+                        languageNode.children.map(
+                          (scriptNode: LanguageTreeNode, index2) => {
+                            if (scriptNode.nodeType !== NodeType.Script) {
+                              // this shouldn't happen
+                              console.error(
+                                "unexpected node is not script: ",
+                                scriptNode.id
+                              );
+                              return <></>;
+                            }
+                            return (
+                              <ListItem
+                                key={scriptNode.id}
+                                {...combobox.getItemProps({
+                                  item: scriptNode,
+                                  index2, // TODO what are these indices?
+                                })}
+                                css={css`
+                                  margin-left: 0;
+                                  padding-left: 0;
+                                `}
+                              >
+                                <ScriptCard
+                                  scriptData={scriptNode.nodeData as ScriptData}
+                                  isSelected={isSelectedNode(scriptNode)}
+                                  colorWhenNotSelected={COLORS.white}
+                                  colorWhenSelected={COLORS.blues[1]}
+                                />
+                              </ListItem>
+                            );
+                          }
+                        )}
+                    </List>
                   </ListItem>
                 );
               })}
@@ -343,11 +322,19 @@ function App() {
 export default App;
 
 // TODOs:
-// Why am I making trees from scratch?
-// - make the scripts show and hide
-// - attempt to make an alternate implementation
-// colored text of the text match
+// - make selecting script nodes work
+// - work on moving toward headless
+// - why is the header broken?
+// - make submit button
+// - why can't i get onInputValueChange into the statereducer?
+// - fix index and index2
+// - fix refkey
+// - fix the index - language results querying
+// - fix styling
+
 // how does sx work?
+// Why am I making trees from scratch?
+// colored text of the text match
 
 // we need to make sure we can reopen the tree to a particular expansion state (e.g. language and script)
 // - cut off country names after two lines, css rule to add an ellipsis (text overflow). Like as handled in bloom library (e.g. search bloom library covid english).
@@ -356,12 +343,5 @@ export default App;
 // how does sx work?
 // check the language search of blorg to see how to debounce searching
 
-// Who should own the languageDataTree state? the CardTree? and then when we setCanSubmit, we need to make sure not to rerender card tree, annoying
-// if app owns languageDataTree, then we setLanguageDataCardTree and then the whole thing rerenders,
-
-// IF we just use state for the whole thing, does the whole thing rerender each time anyway? I feel like toggle should be simpler...
-
 // TODO jeni bister email - searching dialect names should pull up the language also
 // maybe a "Variants include" field?
-
-// TODO highlighting...
