@@ -73,6 +73,40 @@ function searchAndCreateTree(searchString: string): LanguageTreeNode[] {
   return languageNodes;
 }
 
+const testScriptNode: LanguageTreeNode = {
+  children: [],
+  id: "testId",
+  nodeData: { code: "Brai" },
+  nodeGeneology: ["tpi-Brai", "Brai"],
+  nodeType: NodeType.Script,
+  requiresFurtherSelection: false,
+};
+
+// children: Array [ {…} ]
+// id: "tpi-Brai"
+// ​
+// nodeData: Object { autonym: "Tok Pisin", code: "tpi-Brai", regions: (1) […], … }
+// ​
+// nodeGeneology: Array [ "tpi-Brai" ]
+// ​
+// nodeType: "language"
+// ​
+// requiresFurtherSelection: true
+// Put all of the above properties into the testLangNode below
+const testLangNode: LanguageTreeNode = {
+  children: [testScriptNode],
+  id: "tpi-Brai",
+  nodeData: {
+    autonym: "Tok Pisin",
+    code: "tpi-Brai",
+    regions: ["Papua New Guinea"],
+    names: ["Tok Pisin"],
+  },
+  nodeGeneology: ["tpi-Brai"],
+  nodeType: NodeType.Language,
+  requiresFurtherSelection: true,
+};
+
 function App() {
   const [langSearchString, setLangSearchString] = useState("tok pisin");
   const [languageDataTree, setLanguageDataTree] = useState<LanguageTreeNode[]>(
@@ -87,7 +121,6 @@ function App() {
     switch (type) {
       case useCombobox.stateChangeTypes.InputChange: {
         setSelectedNodeGeneology([]); // unselect everything
-        console.log("changes", changes);
         return {
           // return normal changes.
           ...changes,
@@ -96,6 +129,7 @@ function App() {
       }
       case useCombobox.stateChangeTypes.ItemClick:
       case useCombobox.stateChangeTypes.InputKeyDownEnter: {
+        console.log("selectedItem", changes.selectedItem);
         selectNode(changes.selectedItem);
         return state; //Discard all the other proposed changes
       }
@@ -105,7 +139,7 @@ function App() {
   }, []);
 
   const combobox = useCombobox({
-    items: languageDataTree,
+    items: [testLangNode, ...languageDataTree],
     onInputValueChange({ inputValue }) {
       setLanguageDataTree(searchAndCreateTree(inputValue));
     },
@@ -116,6 +150,8 @@ function App() {
     //  TODO if there is no node, what should this do?
     if (node) {
       setSelectedNodeGeneology(node.nodeGeneology);
+    } else {
+      console.error("no node selected");
     }
   }
 
@@ -234,7 +270,7 @@ function App() {
               )}
               {...combobox.getMenuProps()}
             >
-              {languageDataTree.map((languageNode, index) => {
+              {languageDataTree.map((languageNode) => {
                 if (languageNode.nodeType !== NodeType.Language) {
                   console.error(
                     "unexpected node is not language node: ",
@@ -243,72 +279,68 @@ function App() {
                   return <></>;
                 }
                 return (
-                  <ListItem
-                    // TODO
-                    // className={cx(
-                    //   highlightedIndex === index && "bg-blue-300",
-                    //   selectedItem === item && "font-bold",
-                    //   "py-2 px-3 shadow-sm"
-                    // )}
-                    key={languageNode.id}
-                    {...combobox.getItemProps({
-                      item: languageNode,
-                      index,
-                    })}
-                    css={css`
-                      margin-left: 0;
-                      padding-left: 0;
-                    `}
-                  >
-                    <LanguageCard
-                      languageCardData={languageNode.nodeData as LanguageData}
-                      isSelected={isSelectedNode(languageNode)}
-                      colorWhenNotSelected={COLORS.white}
-                      colorWhenSelected={COLORS.blues[0]}
-                    ></LanguageCard>
-                    <List
-                      className={cx(
-                        !languageDataTree.length && "hidden",
-                        "!absolute bg-white w-72 shadow-md max-h-80 overflow-scroll"
-                      )}
+                  <>
+                    <ListItem
                       // TODO
-                      // {...combobox.getMenuProps()}
+                      // className={cx(
+                      //   highlightedIndex === index && "bg-blue-300",
+                      //   selectedItem === item && "font-bold",
+                      //   "py-2 px-3 shadow-sm"
+                      // )}
+                      key={languageNode.id}
+                      {...combobox.getItemProps({
+                        item: languageNode,
+                      })}
+                      css={css`
+                        margin-left: 0;
+                        padding-left: 0;
+                      `}
                     >
-                      {isSelectedNode(languageNode) &&
-                        languageNode.children.map(
-                          (scriptNode: LanguageTreeNode, index2) => {
-                            if (scriptNode.nodeType !== NodeType.Script) {
-                              // this shouldn't happen
-                              console.error(
-                                "unexpected node is not script: ",
-                                scriptNode.id
-                              );
-                              return <></>;
-                            }
-                            return (
-                              <ListItem
-                                key={scriptNode.id}
-                                {...combobox.getItemProps({
-                                  item: scriptNode,
-                                  index2, // TODO what are these indices?
-                                })}
-                                css={css`
-                                  margin-left: 0;
-                                  padding-left: 0;
-                                `}
-                              >
-                                <ScriptCard
-                                  scriptData={scriptNode.nodeData as ScriptData}
-                                  isSelected={isSelectedNode(scriptNode)}
-                                  colorWhenNotSelected={COLORS.white}
-                                  colorWhenSelected={COLORS.blues[1]}
-                                />
-                              </ListItem>
+                      <LanguageCard
+                        languageCardData={languageNode.nodeData as LanguageData}
+                        isSelected={isSelectedNode(languageNode)}
+                        colorWhenNotSelected={COLORS.white}
+                        colorWhenSelected={COLORS.blues[0]}
+                      ></LanguageCard>
+                    </ListItem>
+                    {isSelectedNode(languageNode) &&
+                      languageNode.children.map(
+                        // TODO rename "children"
+                        (scriptNode: LanguageTreeNode) => {
+                          if (scriptNode.nodeType !== NodeType.Script) {
+                            // this shouldn't happen
+                            console.error(
+                              "unexpected node is not script: ",
+                              scriptNode.id
                             );
+                            return <></>;
                           }
-                        )}
-                    </List>
-                  </ListItem>
+                          console.log("scriptNode", scriptNode);
+                          return (
+                            <ListItem
+                              key={scriptNode.id}
+                              {...combobox.getItemProps({
+                                // item: scriptNode,
+                                item: testLangNode,
+                                // item: testScriptNode,
+                              })}
+                              css={css`
+                                margin-left: 0;
+                                padding-left: 0;
+                              `}
+                            >
+                              <ScriptCard
+                                scriptData={scriptNode.nodeData as ScriptData}
+                                isSelected={isSelectedNode(scriptNode)}
+                                colorWhenNotSelected={COLORS.white}
+                                colorWhenSelected={COLORS.blues[1]}
+                              />
+                            </ListItem>
+                          );
+                        }
+                      )}
+                    {/* </List> */}
+                  </>
                 );
               })}
             </List>
