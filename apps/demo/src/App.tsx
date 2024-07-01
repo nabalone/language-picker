@@ -19,9 +19,7 @@ import {
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import { ScriptCard, ScriptData } from "./ScriptCard";
-import { useCombobox } from "downshift";
 import { cx } from "@emotion/css";
-import React from "react";
 import { COLORS } from "./Colors";
 
 enum NodeType {
@@ -73,40 +71,6 @@ function searchAndCreateTree(searchString: string): LanguageTreeNode[] {
   return languageNodes;
 }
 
-const testScriptNode: LanguageTreeNode = {
-  children: [],
-  id: "testId",
-  nodeData: { code: "Brai" },
-  nodeGeneology: ["tpi-Brai", "Brai"],
-  nodeType: NodeType.Script,
-  requiresFurtherSelection: false,
-};
-
-// children: Array [ {…} ]
-// id: "tpi-Brai"
-// ​
-// nodeData: Object { autonym: "Tok Pisin", code: "tpi-Brai", regions: (1) […], … }
-// ​
-// nodeGeneology: Array [ "tpi-Brai" ]
-// ​
-// nodeType: "language"
-// ​
-// requiresFurtherSelection: true
-// Put all of the above properties into the testLangNode below
-const testLangNode: LanguageTreeNode = {
-  children: [testScriptNode],
-  id: "tpi-Brai",
-  nodeData: {
-    autonym: "Tok Pisin",
-    code: "tpi-Brai",
-    regions: ["Papua New Guinea"],
-    names: ["Tok Pisin"],
-  },
-  nodeGeneology: ["tpi-Brai"],
-  nodeType: NodeType.Language,
-  requiresFurtherSelection: true,
-};
-
 function App() {
   const [langSearchString, setLangSearchString] = useState("tok pisin");
   const [languageDataTree, setLanguageDataTree] = useState<LanguageTreeNode[]>(
@@ -115,36 +79,6 @@ function App() {
   const [selectedNodeGeneology, setSelectedNodeGeneology] = useState<string[]>(
     []
   );
-
-  const stateReducer = React.useCallback((state, actionAndChanges) => {
-    const { type, changes } = actionAndChanges;
-    switch (type) {
-      case useCombobox.stateChangeTypes.InputChange: {
-        setSelectedNodeGeneology([]); // unselect everything
-        return {
-          // return normal changes.
-          ...changes,
-          items: searchAndCreateTree(changes.inputValue),
-        };
-      }
-      case useCombobox.stateChangeTypes.ItemClick:
-      case useCombobox.stateChangeTypes.InputKeyDownEnter: {
-        console.log("selectedItem", changes.selectedItem);
-        selectNode(changes.selectedItem);
-        return state; //Discard all the other proposed changes
-      }
-      default:
-        return changes; // otherwise business as usual.
-    }
-  }, []);
-
-  const combobox = useCombobox({
-    items: [testLangNode, ...languageDataTree],
-    onInputValueChange({ inputValue }) {
-      setLanguageDataTree(searchAndCreateTree(inputValue));
-    },
-    stateReducer,
-  });
 
   function selectNode(node: LanguageTreeNode): void {
     //  TODO if there is no node, what should this do?
@@ -252,15 +186,14 @@ function App() {
                     <Icon component={SearchIcon} />{" "}
                   </InputAdornment>
                 ),
-                ...combobox.getInputProps({ refKey: "inputRef" }), // TODO what is this refKey?
               }}
               id="search-bar"
               variant="filled"
               size="small"
               margin="normal"
               //  fullWidth
-              // value={langSearchString}
-              // onChange={(e) => setLangSearchString(e.target.value)}
+              value={langSearchString}
+              onChange={(e) => setLangSearchString(e.target.value)}
             />
             {/* TODO move this to a new component? */}
             <List
@@ -268,7 +201,6 @@ function App() {
                 !languageDataTree.length && "hidden",
                 "!absolute bg-white w-72 shadow-md max-h-80 overflow-scroll"
               )}
-              {...combobox.getMenuProps()}
             >
               {languageDataTree.map((languageNode) => {
                 if (languageNode.nodeType !== NodeType.Language) {
@@ -287,14 +219,11 @@ function App() {
                       //   selectedItem === item && "font-bold",
                       //   "py-2 px-3 shadow-sm"
                       // )}
-                      key={languageNode.id}
-                      {...combobox.getItemProps({
-                        item: languageNode,
-                      })}
                       css={css`
                         margin-left: 0;
                         padding-left: 0;
                       `}
+                      onClick={() => selectNode(languageNode)}
                     >
                       <LanguageCard
                         languageCardData={languageNode.nodeData as LanguageData}
@@ -316,14 +245,11 @@ function App() {
                             return <></>;
                           }
                           console.log("scriptNode", scriptNode);
+                          // TODO should this be another list?
                           return (
                             <ListItem
                               key={scriptNode.id}
-                              {...combobox.getItemProps({
-                                // item: scriptNode,
-                                item: testLangNode,
-                                // item: testScriptNode,
-                              })}
+                              onClick={() => selectNode(scriptNode)}
                               css={css`
                                 margin-left: 0;
                                 padding-left: 0;
@@ -354,7 +280,6 @@ function App() {
 export default App;
 
 // TODOs:
-// - make selecting script nodes work
 // - work on moving toward headless
 // - why is the header broken?
 // - make submit button
