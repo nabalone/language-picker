@@ -12,6 +12,7 @@ import {
   InputAdornment,
   List,
   ListItem,
+  OutlinedInput,
   ThemeProvider,
   Toolbar,
   Typography,
@@ -72,7 +73,6 @@ function searchAndCreateTree(searchString: string): LanguageTreeNode[] {
 }
 
 function App() {
-  const [langSearchString, setLangSearchString] = useState("tok pisin");
   const [languageDataTree, setLanguageDataTree] = useState<LanguageTreeNode[]>(
     []
   ); // This is a list of the top level nodes. There is no root node
@@ -121,10 +121,6 @@ function App() {
   const canSubmit = !getNodeByGeneology(selectedNodeGeneology)
     ?.requiresFurtherSelection;
 
-  useEffect(() => {
-    setLanguageDataTree(searchAndCreateTree(langSearchString));
-  }, [langSearchString]); // TODO is this the correct use of useEffect? I'm pretty sure there's a better way. Populate only on [], and then call a method after a delay?
-  // TODO set up a time delay so typing doesn't immediately trigger it
   const theme = createTheme({
     // TODO theme?
   });
@@ -157,11 +153,25 @@ function App() {
             position="static"
             css={css`
               background-color: white;
-              // margin-bottom: 30px;
+              box-shadow: none;
+              border-bottom: 2px solid ${COLORS.greys[1]};
             `}
           >
-            <Toolbar>
-              <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+            <Toolbar
+              disableGutters
+              css={css`
+                padding-left: 15px;
+                // Todo why does this not work
+              `}
+            >
+              <Typography
+                variant="h6"
+                component="div"
+                css={css`
+                  color: black;
+                  font-weight: bold;
+                `}
+              >
                 Choose Language
               </Typography>
             </Toolbar>
@@ -169,31 +179,45 @@ function App() {
           <div
             id="left-pane"
             css={css`
-              padding: 10px;
+              padding: 10px 25px;
               width: 50%;
             `}
           >
             <label htmlFor="search-bar">
-              <Typography>Search by name, code, or country</Typography>
+              <Typography
+                css={css`
+                  color: ${COLORS.greys[2]};
+                  font-weight: bold;
+                  margin-bottom: 10px;
+                `}
+              >
+                Search by name, code, or country
+              </Typography>
             </label>
-            <TextField
-              InputLabelProps={{
-                shrink: true,
-              }}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="start">
-                    <Icon component={SearchIcon} />{" "}
-                  </InputAdornment>
-                ),
-              }}
+            <OutlinedInput
+              type="text"
+              css={css`
+                background-color: white;
+                margin-right: 0;
+              `}
+              // TODO why is the icon not all the way to the right?
+
+              endAdornment={
+                <InputAdornment
+                  position="end"
+                  css={css`
+                    margin-right: 0;
+                  `}
+                >
+                  <Icon component={SearchIcon} />
+                </InputAdornment>
+              }
               id="search-bar"
-              variant="filled"
               size="small"
-              margin="normal"
-              //  fullWidth
-              value={langSearchString}
-              onChange={(e) => setLangSearchString(e.target.value)}
+              fullWidth
+              onChange={(e) => {
+                setLanguageDataTree(searchAndCreateTree(e.target.value));
+              }}
             />
             {/* TODO move this to a new component? */}
             <List
@@ -281,13 +305,12 @@ export default App;
 
 // TODOs:
 // - work on moving toward headless
-// - why is the header broken?
 // - make submit button
 // - why can't i get onInputValueChange into the statereducer?
 // - fix index and index2
 // - fix refkey
 // - fix the index - language results querying
-// - fix styling
+// - fix styling - cards are not full width
 
 // how does sx work?
 // Why am I making trees from scratch?
