@@ -2,12 +2,11 @@
 // todo eslint
 /** @jsxImportSource @emotion/react */
 import { css } from "@emotion/react";
-import { useEffect, useState } from "react";
 import { LanguageData, searchForLanguage } from "@languagepicker/ethnolib";
 import { LanguageCard } from "./LanguageCard";
-import TextField from "@mui/material/TextField";
 import {
   AppBar,
+  Button,
   Icon,
   InputAdornment,
   List,
@@ -22,104 +21,26 @@ import SearchIcon from "@mui/icons-material/Search";
 import { ScriptCard, ScriptData } from "./ScriptCard";
 import { cx } from "@emotion/css";
 import { COLORS } from "./Colors";
-
-enum NodeType {
-  Language = "language",
-  Script = "script",
-}
-
-export type LanguageTreeNode = {
-  nodeData: LanguageData | ScriptData | null;
-  id: string;
-  nodeGeneology: string[]; // the ids of the path to this node
-  nodeType: NodeType;
-  // its possible we want to enforce that the user always selects down to a leaf node,
-  //  in which case this would be unneccessary and we could just check for the presence
-  //  of children. But I think that's not the case and some choices will be optional/have fallbacks
-  requiresFurtherSelection: boolean;
-  children: LanguageTreeNode[];
-};
-
-// TODO casing?
-// TODO what if no results?
-function searchAndCreateTree(searchString: string): LanguageTreeNode[] {
-  const languageList = searchForLanguage(searchString);
-  const languageNodes = languageList.map((language) => {
-    const languageNode: LanguageTreeNode = {
-      nodeData: language,
-      id: language.code,
-      nodeGeneology: [language.code],
-      nodeType: NodeType.Language,
-      requiresFurtherSelection: true,
-      children: [],
-    };
-    const scriptNodes = language.scripts?.map((script) => {
-      const scriptData = {
-        code: script,
-      } as ScriptData;
-      return {
-        nodeData: scriptData,
-        id: script,
-        nodeGeneology: [language.code, script],
-        nodeType: NodeType.Script,
-        requiresFurtherSelection: false,
-        children: [],
-      } as LanguageTreeNode;
-    });
-    languageNode.children = scriptNodes;
-    return languageNode;
-  });
-  return languageNodes;
-}
+import {
+  LanguageTreeNode,
+  NodeType,
+  Status,
+  useLanguagePicker,
+} from "./useLanguagePicker";
 
 function App() {
-  const [languageDataTree, setLanguageDataTree] = useState<LanguageTreeNode[]>(
-    []
-  ); // This is a list of the top level nodes. There is no root node
-  const [selectedNodeGeneology, setSelectedNodeGeneology] = useState<string[]>(
-    []
-  );
-
-  function selectNode(node: LanguageTreeNode): void {
-    //  TODO if there is no node, what should this do?
-    if (node) {
-      setSelectedNodeGeneology(node.nodeGeneology);
-    } else {
-      console.error("no node selected");
-    }
-  }
+  const {
+    languageDataTree,
+    selectedNodeGeneology,
+    status,
+    onSearchStringChange,
+    onSelectNode,
+  } = useLanguagePicker();
+  // languageDataTree is a list of the top level nodes. There is no root node
 
   function isSelectedNode(node: LanguageTreeNode): boolean {
     return selectedNodeGeneology.includes(node.id);
   }
-
-  function getNodeByGeneology(
-    geneology: string[]
-  ): LanguageTreeNode | undefined {
-    // to make typescript happy
-    if (
-      !languageDataTree ||
-      languageDataTree.length == 0 ||
-      !geneology ||
-      geneology?.length
-    ) {
-      return undefined;
-    }
-
-    let currentNodeList = languageDataTree;
-    let currentNode = undefined;
-    for (const id of geneology) {
-      currentNode = currentNodeList.find((node) => node.id === id);
-      if (!currentNode) {
-        return undefined;
-      }
-      currentNodeList = currentNode.children;
-    }
-    return currentNode;
-  }
-
-  const canSubmit = !getNodeByGeneology(selectedNodeGeneology)
-    ?.requiresFurtherSelection;
 
   const theme = createTheme({
     // TODO theme?
@@ -139,9 +60,10 @@ function App() {
         `}
       >
         <div
+          id="lang-picker-container"
           css={css`
             width: 1000px;
-            height: 1000px;
+            height: 750px;
             background-color: ${COLORS.greys[0]};
             border-radius: 10px;
             position: relative;
@@ -181,6 +103,8 @@ function App() {
             css={css`
               padding: 10px 25px;
               width: 50%;
+              position: relative;
+              overflow: scroll;
             `}
           >
             <label htmlFor="search-bar">
@@ -216,14 +140,13 @@ function App() {
               size="small"
               fullWidth
               onChange={(e) => {
-                setLanguageDataTree(searchAndCreateTree(e.target.value));
+                onSearchStringChange(e.target.value);
               }}
             />
-            {/* TODO move this to a new component? */}
             <List
               className={cx(
                 !languageDataTree.length && "hidden",
-                "!absolute bg-white w-72 shadow-md max-h-80 overflow-scroll"
+                "!absolute bg-white w-72 shadow-md max-h-80"
               )}
             >
               {languageDataTree.map((languageNode) => {
@@ -247,7 +170,7 @@ function App() {
                         margin-left: 0;
                         padding-left: 0;
                       `}
-                      onClick={() => selectNode(languageNode)}
+                      onClick={() => onSelectNode(languageNode)}
                     >
                       <LanguageCard
                         languageCardData={languageNode.nodeData as LanguageData}
@@ -273,7 +196,7 @@ function App() {
                           return (
                             <ListItem
                               key={scriptNode.id}
-                              onClick={() => selectNode(scriptNode)}
+                              onClick={() => onSelectNode(scriptNode)}
                               css={css`
                                 margin-left: 0;
                                 padding-left: 0;
@@ -295,6 +218,29 @@ function App() {
               })}
             </List>
           </div>
+          <div
+            id="buttons-container"
+            css={css`
+              // TODO should flebox these instead
+              position: absolute;
+              width: fit-content;
+              right: 0;
+              bottom: 0;
+              padding: 25px;
+            `}
+          >
+            <Button
+              variant="contained"
+              color="primary"
+              //  color={COLORS.blues[0]} TODO
+              disabled={status !== Status.ReadyToSubmit}
+            >
+              OK
+            </Button>
+            <Button variant="outlined" color="primary">
+              Cancel
+            </Button>
+          </div>
         </div>
       </div>
     </ThemeProvider>
@@ -304,8 +250,7 @@ function App() {
 export default App;
 
 // TODOs:
-// - work on moving toward headless
-// - make submit button
+// - debounce (status)
 // - why can't i get onInputValueChange into the statereducer?
 // - fix index and index2
 // - fix refkey
