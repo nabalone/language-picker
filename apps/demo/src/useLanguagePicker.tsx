@@ -56,15 +56,28 @@ export const useLanguagePicker = () => {
     languageDataTree: [] as LanguageTreeNode[],
     selectedNodeGeneology: [] as string[],
     status: Status.MoreSelectionNeeded,
+    // currentlyProcessingTimeoutId: undefined as number | undefined, // TODO what is the default number?
   });
 
   const onSearchStringChange = (searchString: string) => {
+    // if (state.currentlyProcessingTimeoutId) {
+    //   clearTimeout(state.currentlyProcessingTimeoutId);
+    // }
     setState({
       ...state,
       languageDataTree: [],
       selectedNodeGeneology: [],
       status: Status.Loading,
+      //   currentlyProcessingTimeoutId: setTimeout(() => {
+      //     doSearchAndUpdate(searchString);
+      //   }),
     });
+    setTimeout(() => {
+      doSearchAndUpdate(searchString);
+    });
+  };
+
+  async function doSearchAndUpdate(searchString: string) {
     // TODO casing?
     // TODO what if no results?
     const languageList = searchForLanguage(searchString);
@@ -98,8 +111,9 @@ export const useLanguagePicker = () => {
       languageDataTree,
       selectedNodeGeneology: [] as string[],
       status: Status.MoreSelectionNeeded,
+      //   currentlyProcessingTimeoutId: undefined,
     });
-  };
+  }
 
   const onSelectNode = (node: LanguageTreeNode) => {
     //  TODO if there is no node, what should this do?

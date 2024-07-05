@@ -162,9 +162,7 @@ function App() {
                 // size="small"
                 fullWidth
                 onChange={(e) => {
-                  setTimeout(() => {
-                    onSearchStringChange(e.target.value);
-                  }, 200); // debounce TODO do we even want this here though?
+                  onSearchStringChange(e.target.value);
                 }}
               />
               <List
