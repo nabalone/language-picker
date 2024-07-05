@@ -11,38 +11,44 @@ export const LanguageCard: React.FunctionComponent<{
   colorWhenNotSelected: string;
   colorWhenSelected: string;
 }> = (props) => {
-  // const childrenWhenSelected =  props.childrenData.map((scriptData) => (
-  //   <ScriptCard scriptData={scriptData} />
-  // ));
   return (
     <>
-      <EthnolibCard
-        css={css`
-          position: relative;
-        `}
-        // isSelected={props.isSelected}
-        // childrenWhenSelected={childrenWhenSelected}
-        {...props}
-      >
+      <EthnolibCard {...props}>
         <Typography variant="h5" gutterBottom>
           {props.languageCardData.autonym}
         </Typography>
         <Typography
           css={css`
-            width: fit-content;
             right: 0;
             top: 0;
             position: absolute;
             margin: 16px; // what should this be? To match the padding of the card
+            font-family: "Roboto Mono", monospace;
           `}
           variant="body2"
         >
           {props.languageCardData.code}
         </Typography>
-        <Typography variant="h5" gutterBottom>
+        <Typography
+          variant="h5"
+          gutterBottom
+          css={css`
+            // TODO Copilot did this and I don't understand it but it works
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+          `}
+        >
           {props.languageCardData.regions?.join(", ")}
         </Typography>
-        <Typography variant="body2">
+        <Typography
+          variant="body2"
+          // Always show all the names
+          css={css`
+            text-wrap: balance;
+          `}
+        >
           {props.languageCardData.names?.join(", ")}
         </Typography>
       </EthnolibCard>

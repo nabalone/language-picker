@@ -59,6 +59,12 @@ export const useLanguagePicker = () => {
   });
 
   const onSearchStringChange = (searchString: string) => {
+    setState({
+      ...state,
+      languageDataTree: [],
+      selectedNodeGeneology: [],
+      status: Status.Loading,
+    });
     // TODO casing?
     // TODO what if no results?
     const languageList = searchForLanguage(searchString);

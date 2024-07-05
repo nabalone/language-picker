@@ -1,4 +1,3 @@
-import { css } from "@emotion/css";
 import { EthnolibCard } from "./EthnolibCard";
 import { Typography } from "@mui/material";
 
@@ -15,13 +14,7 @@ export const ScriptCard: React.FunctionComponent<{
   colorWhenSelected: string;
 }> = (props) => {
   return (
-    <EthnolibCard
-      css={css`
-        width: 500px;
-        position: relative;
-      `}
-      {...props}
-    >
+    <EthnolibCard {...props}>
       <Typography variant="h5">{props.scriptData.code}</Typography>
     </EthnolibCard>
   );
