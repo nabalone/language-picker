@@ -1,5 +1,6 @@
 import { EthnolibCard } from "./EthnolibCard";
 import { Typography } from "@mui/material";
+import { css } from "@emotion/react";
 
 export type ScriptData = {
   code: string;

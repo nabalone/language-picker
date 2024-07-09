@@ -3,6 +3,7 @@ import { css } from "@emotion/react";
 import { EthnolibCard } from "./EthnolibCard";
 import { Typography } from "@mui/material";
 import { LanguageData } from "@languagepicker/ethnolib";
+import { memo } from "react";
 
 export const LanguageCard: React.FunctionComponent<{
   languageCardData: LanguageData;
@@ -10,7 +11,7 @@ export const LanguageCard: React.FunctionComponent<{
   isSelected: boolean;
   colorWhenNotSelected: string;
   colorWhenSelected: string;
-}> = (props) => {
+}> = memo((props) => {
   return (
     <>
       <EthnolibCard {...props}>
@@ -54,4 +55,4 @@ export const LanguageCard: React.FunctionComponent<{
       </EthnolibCard>
     </>
   );
-};
+});

@@ -11,6 +11,7 @@ import {
   InputAdornment,
   List,
   ListItem,
+  ListItemButton,
   OutlinedInput,
   ThemeProvider,
   Toolbar,
@@ -19,7 +20,6 @@ import {
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import { ScriptCard, ScriptData } from "./ScriptCard";
-import { cx } from "@emotion/css";
 import { COLORS } from "./Colors";
 import {
   LanguageTreeNode,
@@ -27,6 +27,12 @@ import {
   Status,
   useLanguagePicker,
 } from "./useLanguagePicker";
+import { debounce } from "lodash";
+import "./styles.css";
+
+const testScriptData: ScriptData = {
+  code: "TestScript",
+};
 
 function App() {
   const {
@@ -41,48 +47,35 @@ function App() {
   function isSelectedNode(node: LanguageTreeNode): boolean {
     return selectedNodeGeneology.includes(node.id);
   }
-
   const theme = createTheme({
-    // TODO theme?
+    palette: {
+      primary: {
+        main: COLORS.blues[2],
+      },
+    },
   });
 
   return (
-    <ThemeProvider
-      theme={theme}
-      //  TODO is this the right place to put global styles?
-    >
+    <ThemeProvider theme={theme}>
       <div
+        // TODO this is just a placeholder background
         css={css`
-          position: sticky;
-          // TODO why does this not work
-          top: 30px;
           background-color: rgb(60, 60, 60);
           width: 100%;
           height: 100vh;
-          padding: 10px;
-
-          // TODO put this somewhere better
-          // see https://mui.com/material-ui/react-css-baseline/
-          // TODO does this upset mui too much?
-          box-sizing: border-box;
-          *,
-          *:before,
-          *:after {
-            box-sizing: inherit;
-          }
+          padding: 17px;
         `}
       >
         <div
           id="lang-picker-container"
           css={css`
-            width: 1000px;
+            width: 1250px;
             background-color: ${COLORS.greys[0]};
             border-radius: 10px;
             position: relative;
             margin-left: auto;
             margin-right: auto;
-            overflow: hidden;
-            // TODO otherwise things cover the rounded corners. Better way to fix?
+            overflow: hidden; // TODO otherwise things cover the rounded corners. Better way to fix?
           `}
         >
           <AppBar
@@ -97,7 +90,6 @@ function App() {
               disableGutters
               css={css`
                 padding-left: 15px;
-                // Todo why does this not work
               `}
             >
               <Typography
@@ -124,8 +116,8 @@ function App() {
                 padding: 10px 25px;
                 width: 50%;
                 height: 100%;
-                position: relative; // TODO is this necessary?
-                display: flex;
+                position: relative;
+                display: flex; // to make the language list overflow scroll work
                 flex-direction: column;
               `}
             >
@@ -145,9 +137,8 @@ function App() {
                 css={css`
                   background-color: white;
                   margin-right: 0;
+                  margin-bottom: 10px;
                 `}
-                // TODO why is the icon not all the way to the right?
-
                 endAdornment={
                   <InputAdornment
                     position="end"
@@ -162,17 +153,15 @@ function App() {
                 // size="small"
                 fullWidth
                 onChange={(e) => {
-                  onSearchStringChange(e.target.value);
+                  debounce(async () => {
+                    onSearchStringChange(e.target.value);
+                  }, 0)();
                 }}
               />
               <List
                 css={css`
                   overflow-y: auto;
                 `}
-                className={cx(
-                  !languageDataTree.length && "hidden",
-                  "!absolute bg-white w-72 shadow-md max-h-80"
-                )}
               >
                 {languageDataTree.map((languageNode) => {
                   if (languageNode.nodeType !== NodeType.Language) {
@@ -183,18 +172,16 @@ function App() {
                     return <></>;
                   }
                   return (
-                    <>
-                      <ListItem
-                        // TODO
-                        // className={cx(
-                        //   highlightedIndex === index && "bg-blue-300",
-                        //   selectedItem === item && "font-bold",
-                        //   "py-2 px-3 shadow-sm"
-                        // )}
-                        css={css`
-                          margin-left: 0;
-                          padding-left: 0;
-                        `}
+                    // <>
+                    <ListItem
+                      css={css`
+                        margin-left: 0;
+                        padding-left: 0;
+                        flex-direction: column;
+                      `}
+                      key={languageNode.id}
+                    >
+                      <ListItemButton
                         onClick={() => onSelectNode(languageNode)}
                       >
                         <LanguageCard
@@ -208,45 +195,113 @@ function App() {
                           colorWhenNotSelected={COLORS.white}
                           colorWhenSelected={COLORS.blues[0]}
                         ></LanguageCard>
-                      </ListItem>
-                      {isSelectedNode(languageNode) &&
-                        languageNode.children.map(
-                          // TODO rename "children"
-                          (scriptNode: LanguageTreeNode) => {
-                            if (scriptNode.nodeType !== NodeType.Script) {
-                              // this shouldn't happen
-                              console.error(
-                                "unexpected node is not script: ",
-                                scriptNode.id
-                              );
-                              return <></>;
-                            }
-                            console.log("scriptNode", scriptNode);
-                            // TODO should this be another list?
-                            return (
-                              <ListItem
-                                key={scriptNode.id}
-                                onClick={() => onSelectNode(scriptNode)}
-                                css={css`
-                                  margin-left: 0;
-                                  padding-left: 0;
-                                `}
-                              >
-                                <ScriptCard
+                      </ListItemButton>
+                      {isSelectedNode(languageNode) && (
+                        <List
+                          css={css`
+                            display: flex;
+                            flex-direction: row;
+                            justify-content: flex-end;
+                            flex-wrap: wrap;
+                            // TODO do we want to scroll? Or wrap?
+                            padding-left: 30px;
+                          `}
+                        >
+                          <ListItem
+                            key={"a"}
+                            css={css`
+                              margin-left: 0;
+                              padding-left: 0;
+                              width: fit-content;
+                            `}
+                          >
+                            <ScriptCard
+                              css={css`
+                                min-width: 175px;
+                              `}
+                              scriptData={testScriptData as ScriptData}
+                              isSelected={false}
+                              colorWhenNotSelected={COLORS.white}
+                              colorWhenSelected={COLORS.blues[1]}
+                            />
+                          </ListItem>{" "}
+                          <ListItem
+                            key={"c"}
+                            css={css`
+                              margin-left: 0;
+                              padding-left: 0;
+                              width: fit-content;
+                            `}
+                          >
+                            <ScriptCard
+                              css={css`
+                                min-width: 175px;
+                              `}
+                              scriptData={testScriptData as ScriptData}
+                              isSelected={false}
+                              colorWhenNotSelected={COLORS.white}
+                              colorWhenSelected={COLORS.blues[1]}
+                            />
+                          </ListItem>{" "}
+                          <ListItem
+                            key={"b"}
+                            css={css`
+                              margin-left: 0;
+                              padding-left: 0;
+                              width: fit-content;
+                            `}
+                          >
+                            <ScriptCard
+                              css={css`
+                                min-width: 175px;
+                              `}
+                              scriptData={testScriptData as ScriptData}
+                              isSelected={false}
+                              colorWhenNotSelected={COLORS.white}
+                              colorWhenSelected={COLORS.blues[1]}
+                            />
+                          </ListItem>
+                          {languageNode.childNodes.map(
+                            (scriptNode: LanguageTreeNode) => {
+                              if (scriptNode.nodeType !== NodeType.Script) {
+                                // this shouldn't happen
+                                console.error(
+                                  "unexpected node is not script: ",
+                                  scriptNode.id
+                                );
+                                return <></>;
+                              }
+                              return (
+                                <ListItem
+                                  key={scriptNode.id}
+                                  onClick={() => onSelectNode(scriptNode)}
                                   css={css`
-                                    min-width: 175px;
+                                    margin-left: 0;
+                                    padding-left: 0;
+                                    width: fit-content;
                                   `}
-                                  scriptData={scriptNode.nodeData as ScriptData}
-                                  isSelected={isSelectedNode(scriptNode)}
-                                  colorWhenNotSelected={COLORS.white}
-                                  colorWhenSelected={COLORS.blues[1]}
-                                />
-                              </ListItem>
-                            );
-                          }
-                        )}
-                      {/* </List> */}
-                    </>
+                                >
+                                  <ScriptCard
+                                    css={css`
+                                      min-width: 175px;
+                                    `}
+                                    scriptData={
+                                      scriptNode.nodeData as ScriptData
+                                    }
+                                    isSelected={isSelectedNode(scriptNode)}
+                                    colorWhenNotSelected={COLORS.white}
+                                    colorWhenSelected={COLORS.blues[1]}
+                                  />
+                                  {/* </ListItemButton> */}
+                                </ListItem>
+                              );
+                            }
+                          )}
+                        </List>
+                      )}
+                    </ListItem>
+
+                    // </>
                   );
                 })}
               </List>
@@ -255,13 +310,11 @@ function App() {
           <div
             id="buttons-container"
             css={css`
-              // TODO should flebox these instead
               position: absolute;
               width: fit-content;
               right: 0;
               bottom: 0;
               padding: 25px;
-              // display: flex;
             `}
           >
             <Button
@@ -271,7 +324,6 @@ function App() {
               `}
               variant="contained"
               color="primary"
-              //  color={COLORS.blues[0]} TODO
               disabled={status !== Status.ReadyToSubmit}
             >
               OK
@@ -295,19 +347,18 @@ function App() {
 export default App;
 
 // TODOs:
-// - debounce (status)
+// - performance issues with selecting  due to rerendering all the cards?
+// - debounce - what to do (status)
 // - fix the index - language results querying
-// - fix styling
+// - what to do about margin under the search bar?
 
-// how does sx work?
-// Why am I making trees from scratch?
+// We could use sx instead of css?
 // colored text of the text match
 
 // x we need to make sure we can reopen the tree to a particular expansion state (e.g. language and script)
 // x cut off country names after two lines, css rule to add an ellipsis (text overflow). Like as handled in bloom library (e.g. search bloom library covid english).
 // x don't cut off alternative names. Pretty or balanced or something to wrap at a nice place
 // This is a nice to have. colored text of the text match. If you have an exact match, don't highlight the similar matches. Otherwise hilight the closest matches
-// how does sx work?
 // check the language search of blorg to see how to debounce searching
 
 // TODO jeni bister email - searching dialect names should pull up the language also

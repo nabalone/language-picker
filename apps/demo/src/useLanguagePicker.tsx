@@ -8,7 +8,6 @@ export enum NodeType {
 }
 
 export enum Status {
-  // TODO loading status
   Loading = "loading",
   ReadyToSubmit = "readyToSubmit",
   MoreSelectionNeeded = "moreSelectionNeeded",
@@ -21,29 +20,38 @@ export type LanguageTreeNode = {
   nodeType: NodeType;
   // its possible we want to enforce that the user always selects down to a leaf node,
   //  in which case this would be unneccessary and we could just check for the presence
-  //  of children. But I think that's not the case and some choices will be optional/have fallbacks
+  //  of childNodes. But I think that's not the case and some choices will be optional/have fallbacks
   requiresFurtherSelection: boolean;
-  children: LanguageTreeNode[];
+  childNodes: LanguageTreeNode[];
 };
+
+function getNodesInGeneology(
+  geneology: string[],
+  languageDataTree: LanguageTreeNode[]
+): LanguageTreeNode[] {
+  const nodesInGeneology = [] as LanguageTreeNode[];
+
+  let currentNodeList = languageDataTree;
+  for (const id of geneology) {
+    const currentNode = currentNodeList.find((node) => node.id === id);
+    if (!currentNode) {
+      return nodesInGeneology;
+    }
+    nodesInGeneology.push(currentNode);
+    currentNodeList = currentNode.childNodes;
+  }
+  return nodesInGeneology;
+}
 
 function getNodeByGeneology(
   geneology: string[],
   languageDataTree: LanguageTreeNode[]
 ): LanguageTreeNode | undefined {
-  let currentNodeList = languageDataTree;
-  let currentNode = undefined;
-  for (const id of geneology) {
-    currentNode = currentNodeList.find((node) => node.id === id);
-    if (!currentNode) {
-      return undefined;
-    }
-    currentNodeList = currentNode.children;
-  }
-  return currentNode;
+  const nodesInGeneology = getNodesInGeneology(geneology, languageDataTree);
+  return nodesInGeneology && nodesInGeneology[nodesInGeneology.length - 1];
 }
-// TODO should these helper functions be in useLanguagePicker?
 
-function canSubmit(state) {
+function readyToSubmit(state) {
   const node = getNodeByGeneology(
     state.selectedNodeGeneology,
     state.languageDataTree
@@ -72,14 +80,12 @@ export const useLanguagePicker = () => {
       //     doSearchAndUpdate(searchString);
       //   }),
     });
-    setTimeout(() => {
-      doSearchAndUpdate(searchString);
-    });
+    // setTimeout(() => {
+    doSearchAndUpdate(searchString);
+    // });
   };
 
   async function doSearchAndUpdate(searchString: string) {
-    // TODO casing?
-    // TODO what if no results?
     const languageList = searchForLanguage(searchString);
     const languageDataTree = languageList.map((language) => {
       const languageNode: LanguageTreeNode = {
@@ -88,7 +94,7 @@ export const useLanguagePicker = () => {
         nodeGeneology: [language.code],
         nodeType: NodeType.Language,
         requiresFurtherSelection: true,
-        children: [],
+        childNodes: [],
       };
       const scriptNodes = language.scripts?.map((script) => {
         const scriptData = {
@@ -100,10 +106,10 @@ export const useLanguagePicker = () => {
           nodeGeneology: [language.code, script],
           nodeType: NodeType.Script,
           requiresFurtherSelection: false,
-          children: [],
+          childNodes: [],
         } as LanguageTreeNode;
       });
-      languageNode.children = scriptNodes;
+      languageNode.childNodes = scriptNodes;
       return languageNode;
     });
     setState({
@@ -116,7 +122,6 @@ export const useLanguagePicker = () => {
   }
 
   const onSelectNode = (node: LanguageTreeNode) => {
-    //  TODO if there is no node, what should this do?
     if (node) {
       setState({ ...state, selectedNodeGeneology: node.nodeGeneology });
     } else {
@@ -126,7 +131,7 @@ export const useLanguagePicker = () => {
   return {
     languageDataTree: state.languageDataTree,
     selectedNodeGeneology: state.selectedNodeGeneology,
-    status: canSubmit(state)
+    status: readyToSubmit(state)
       ? Status.ReadyToSubmit
       : Status.MoreSelectionNeeded,
     onSearchStringChange,

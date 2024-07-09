@@ -9,6 +9,7 @@ interface EthnolibCardProps {
   //   childrenWhenSelected: React.ReactNode[];
   colorWhenNotSelected: string;
   colorWhenSelected: string;
+  className?: string;
 }
 
 export const EthnolibCard: React.FunctionComponent<
@@ -22,11 +23,11 @@ export const EthnolibCard: React.FunctionComponent<
       <Card
         variant="outlined"
         css={css`
-          position: relative;
+          position: relative; // so children can be positioned absolutely
           box-shadow: ${COLORS.greys[2]} 0px 5px 5px;
+          background-color: ${backgroundColor};
         `}
-        sx={{ bgcolor: () => backgroundColor }} // TODO or should this just be bgcolor: color?
-        {...props}
+        className={props.className}
       >
         <CardContent>{props.children}</CardContent>
       </Card>

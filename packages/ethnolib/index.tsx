@@ -1,6 +1,6 @@
-import Fuse from 'fuse.js';
+import Fuse from "fuse.js";
 
-import langTags from './langtags.json';
+import langTags from "./langtags.json";
 
 export type LanguageData = {
   autonym: string;
@@ -11,17 +11,18 @@ export type LanguageData = {
 };
 
 export function searchForLanguage(queryString: string) {
+  // TODO make sure it is case insensitive
   const langTags2 = langTags as any[]; // TODO clean up
-//   langTags2.push({
-//   full: 'qaa',
-//   iso639_3: 'qaa',
-//   localname: 'Unknown',
-//   name: 'Unknown',
-//   regionname: 'anywhere',
-//   script: 'Latn',
-//   sldr: false,
-//   tag: 'qaa',
-// });
+  //   langTags2.push({
+  //   full: 'qaa',
+  //   iso639_3: 'qaa',
+  //   localname: 'Unknown',
+  //   name: 'Unknown',
+  //   regionname: 'anywhere',
+  //   script: 'Latn',
+  //   sldr: false,
+  //   tag: 'qaa',
+  // });
 
   const fuseOptions = {
     isCaseSensitive: false,
@@ -37,18 +38,15 @@ export function searchForLanguage(queryString: string) {
     ignoreLocation: true,
     // ignoreFieldNorm: false,
     // fieldNormWeight: 1,
-    keys: [
-      "tag", "name", "localname", "regionname", "names", "full"
-    ]
+    keys: ["tag", "name", "localname", "regionname", "names", "full"],
   };
-  console.log(langTags2.length);
-  
   const fuse = new Fuse(langTags2, fuseOptions);
 
   const results = fuse.search(queryString);
-  console.log(results.map((r) => languageEntryToLanguageCardData(r.item)) as LanguageData[]);
 
-  return (results.map((r) => languageEntryToLanguageCardData(r.item)) as LanguageData[]);
+  return results.map((r) =>
+    languageEntryToLanguageCardData(r.item)
+  ) as LanguageData[];
 }
 
 function languageEntryToLanguageCardData(entry: any): LanguageData {
@@ -61,6 +59,6 @@ function languageEntryToLanguageCardData(entry: any): LanguageData {
     code: entry.tag,
     regions: regionsList,
     names: entry.names ?? [entry.name],
-    scripts: [entry.script]
+    scripts: [entry.script],
   };
 }
