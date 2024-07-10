@@ -11,6 +11,7 @@ export const LanguageCard: React.FunctionComponent<{
   isSelected: boolean;
   colorWhenNotSelected: string;
   colorWhenSelected: string;
+  className?: string;
 }> = memo((props) => {
   return (
     <>

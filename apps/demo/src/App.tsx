@@ -108,6 +108,7 @@ function App() {
             id="lang-picker-body"
             css={css`
               height: 750px;
+              display: flex;
             `}
           >
             <div
@@ -183,6 +184,9 @@ function App() {
                     >
                       <ListItemButton
                         onClick={() => onSelectNode(languageNode)}
+                        css={css`
+                          width: 100%;
+                        `}
                       >
                         <LanguageCard
                           css={css`
@@ -306,37 +310,82 @@ function App() {
                 })}
               </List>
             </div>
-          </div>
-          <div
-            id="buttons-container"
-            css={css`
-              position: absolute;
-              width: fit-content;
-              right: 0;
-              bottom: 0;
-              padding: 25px;
-            `}
-          >
-            <Button
+            <div
+              id="right-pane"
               css={css`
-                margin-right: 10px;
-                min-width: 100px;
+                width: 50%;
+                display: flex; // to make the language list overflow scroll work
+                flex-direction: column;
+                justify-content: flex-end;
+                padding: 10px 25px;
               `}
-              variant="contained"
-              color="primary"
-              disabled={status !== Status.ReadyToSubmit}
             >
-              OK
-            </Button>
-            <Button
-              css={css`
-                min-width: 100px;
-              `}
-              variant="outlined"
-              color="primary"
-            >
-              Cancel
-            </Button>
+              <div
+                id="language-name-bar-container"
+                css={css`
+                  // padding: 10px 25px;
+                  // width: 50%;
+                  // height: 100%;
+                  // position: relative;
+                `}
+              >
+                <label htmlFor="language-name-bar">
+                  <Typography
+                    css={css`
+                      color: ${COLORS.greys[3]};
+                      font-weight: bold;
+                    `}
+                  >
+                    Display this language this way
+                  </Typography>
+                </label>
+                <OutlinedInput
+                  type="text"
+                  css={css`
+                    background-color: white;
+                    margin-right: 16px;
+                    margin-bottom: 10px;
+                  `}
+                  id="language-name-bar"
+                  fullWidth
+                  onChange={(e) => {}}
+                />
+              </div>
+              <div
+                id="buttons-container"
+                css={css`
+                  // position: absolute;
+                  width: 100%;
+                  display: flex;
+                  justify-content: flex-end;
+                  // right: 0;
+                  // bottom: 0;
+                  // padding: 25px;
+                `}
+              >
+                <Button
+                  css={css`
+                    margin-left: auto;
+                    margin-right: 10px;
+                    min-width: 100px;
+                  `}
+                  variant="contained"
+                  color="primary"
+                  disabled={status !== Status.ReadyToSubmit}
+                >
+                  OK
+                </Button>
+                <Button
+                  css={css`
+                    min-width: 100px;
+                  `}
+                  variant="outlined"
+                  color="primary"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -347,6 +396,7 @@ function App() {
 export default App;
 
 // TODOs:
+// - hover on cards
 // - performance issues with selecting  due to rerendering all the cards?
 // - debounce - what to do (status)
 // - fix the index - language results querying
