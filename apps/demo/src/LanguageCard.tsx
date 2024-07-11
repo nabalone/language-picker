@@ -42,7 +42,7 @@ export const LanguageCard: React.FunctionComponent<{
             overflow: hidden;
           `}
         >
-          {props.languageCardData.regions?.join(", ")}
+          {props.languageCardData.regionNames}
         </Typography>
         <Typography
           variant="body2"
@@ -51,7 +51,7 @@ export const LanguageCard: React.FunctionComponent<{
             text-wrap: balance;
           `}
         >
-          {props.languageCardData.names?.join(", ")}
+          {props.languageCardData.names}
         </Typography>
       </EthnolibCard>
     </>

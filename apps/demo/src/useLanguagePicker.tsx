@@ -13,6 +13,16 @@ export enum Status {
   MoreSelectionNeeded = "moreSelectionNeeded",
 }
 
+const SCRIPTS_TO_EXCLUDE = new Set([
+  "Brai",
+  "Zyyy",
+  "Zxxx",
+  "Zinh",
+  "Zmth",
+  "Zsye",
+  "Zsym",
+]);
+
 export type LanguageTreeNode = {
   nodeData: LanguageData | ScriptData | null;
   id: string;
@@ -64,6 +74,7 @@ export const useLanguagePicker = () => {
     languageDataTree: [] as LanguageTreeNode[],
     selectedNodeGeneology: [] as string[],
     status: Status.MoreSelectionNeeded,
+    languageDisplayName: "",
     // currentlyProcessingTimeoutId: undefined as number | undefined, // TODO what is the default number?
   });
 
@@ -93,10 +104,14 @@ export const useLanguagePicker = () => {
         id: language.code,
         nodeGeneology: [language.code],
         nodeType: NodeType.Language,
-        requiresFurtherSelection: true,
+        requiresFurtherSelection: language.scripts.length > 1,
         childNodes: [],
       };
-      const scriptNodes = language.scripts?.map((script) => {
+
+      const filteredScripts = language.scripts.filter(
+        (script) => !SCRIPTS_TO_EXCLUDE.has(script)
+      );
+      const scriptNodes = filteredScripts.map((script) => {
         const scriptData = {
           code: script,
         } as ScriptData;

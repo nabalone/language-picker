@@ -211,96 +211,43 @@ function App() {
                             padding-left: 30px;
                           `}
                         >
-                          <ListItem
-                            key={"a"}
-                            css={css`
-                              margin-left: 0;
-                              padding-left: 0;
-                              width: fit-content;
-                            `}
-                          >
-                            <ScriptCard
-                              css={css`
-                                min-width: 175px;
-                              `}
-                              scriptData={testScriptData as ScriptData}
-                              isSelected={false}
-                              colorWhenNotSelected={COLORS.white}
-                              colorWhenSelected={COLORS.blues[1]}
-                            />
-                          </ListItem>{" "}
-                          <ListItem
-                            key={"c"}
-                            css={css`
-                              margin-left: 0;
-                              padding-left: 0;
-                              width: fit-content;
-                            `}
-                          >
-                            <ScriptCard
-                              css={css`
-                                min-width: 175px;
-                              `}
-                              scriptData={testScriptData as ScriptData}
-                              isSelected={false}
-                              colorWhenNotSelected={COLORS.white}
-                              colorWhenSelected={COLORS.blues[1]}
-                            />
-                          </ListItem>{" "}
-                          <ListItem
-                            key={"b"}
-                            css={css`
-                              margin-left: 0;
-                              padding-left: 0;
-                              width: fit-content;
-                            `}
-                          >
-                            <ScriptCard
-                              css={css`
-                                min-width: 175px;
-                              `}
-                              scriptData={testScriptData as ScriptData}
-                              isSelected={false}
-                              colorWhenNotSelected={COLORS.white}
-                              colorWhenSelected={COLORS.blues[1]}
-                            />
-                          </ListItem>
-                          {languageNode.childNodes.map(
-                            (scriptNode: LanguageTreeNode) => {
-                              if (scriptNode.nodeType !== NodeType.Script) {
-                                // this shouldn't happen
-                                console.error(
-                                  "unexpected node is not script: ",
-                                  scriptNode.id
-                                );
-                                return <></>;
-                              }
-                              return (
-                                <ListItem
-                                  key={scriptNode.id}
-                                  onClick={() => onSelectNode(scriptNode)}
-                                  css={css`
-                                    margin-left: 0;
-                                    padding-left: 0;
-                                    width: fit-content;
-                                  `}
-                                >
-                                  <ScriptCard
+                          {languageNode.childNodes.length > 1 &&
+                            languageNode.childNodes.map(
+                              (scriptNode: LanguageTreeNode) => {
+                                if (scriptNode.nodeType !== NodeType.Script) {
+                                  // this shouldn't happen
+                                  console.error(
+                                    "unexpected node is not script: ",
+                                    scriptNode.id
+                                  );
+                                  return <></>;
+                                }
+                                return (
+                                  <ListItem
+                                    key={scriptNode.id}
+                                    onClick={() => onSelectNode(scriptNode)}
                                     css={css`
-                                      min-width: 175px;
+                                      margin-left: 0;
+                                      padding-left: 0;
+                                      width: fit-content;
                                     `}
-                                    scriptData={
-                                      scriptNode.nodeData as ScriptData
-                                    }
-                                    isSelected={isSelectedNode(scriptNode)}
-                                    colorWhenNotSelected={COLORS.white}
-                                    colorWhenSelected={COLORS.blues[1]}
-                                  />
-                                  {/* </ListItemButton> */}
-                                </ListItem>
-                              );
-                            }
-                          )}
+                                  >
+                                    <ScriptCard
+                                      css={css`
+                                        min-width: 175px;
+                                      `}
+                                      scriptData={
+                                        scriptNode.nodeData as ScriptData
+                                      }
+                                      isSelected={isSelectedNode(scriptNode)}
+                                      colorWhenNotSelected={COLORS.white}
+                                      colorWhenSelected={COLORS.blues[1]}
+                                    />
+                                    {/* </ListItemButton> */}
+                                  </ListItem>
+                                );
+                              }
+                            )}
                         </List>
                       )}
                     </ListItem>
@@ -396,10 +343,29 @@ function App() {
 export default App;
 
 // TODOs:
+
+// spacing between display this language this way and ok,
+// fix the padding around the dialog box
+// fix the hover/mui button. Make sure it is the right width and the spacing doesn't change for selected
+// box sizing is not working
+// put 25px of padding on everything, the whole box
+// southern uzbek shows up twice
+// underneath the autonym
+
+// fix the language name editor
+// highlighting of match string
+// fix trailing commas
+
+// Special cases: English, no regions list, no script options
+// french  - only show francais,
+// make a field of top level search but not show?
+// make a filter that does all the filtering. Filters out middle french, etc.
+
+// langtag needs to show on the right side
+
 // - hover on cards
 // - performance issues with selecting  due to rerendering all the cards?
 // - debounce - what to do (status)
-// - fix the index - language results querying
 // - what to do about margin under the search bar?
 
 // We could use sx instead of css?

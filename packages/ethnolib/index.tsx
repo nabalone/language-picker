@@ -2,11 +2,35 @@ import Fuse from "fuse.js";
 
 import langTags from "./langtags.json";
 
+const COMMA_SEPARATOR = ", ";
+
+// turn "Uzbek, Northern" into "Northern Uzbek"
+function uncomma(str: string) {
+  if (!str) {
+    return ""; // TODO or undefined?
+  }
+  const parts = str.split(COMMA_SEPARATOR);
+  if (parts.length === 1) {
+    return str;
+  }
+  return parts[1] + " " + parts[0];
+}
+
+export type InternalLanguageData = {
+  autonym: string;
+  code: string;
+  regionNames: Set<string>;
+  regionCodes: Set<string>;
+  names: Set<string>;
+  scripts: Set<string>;
+};
+
 export type LanguageData = {
   autonym: string;
   code: string;
-  regions: string[];
-  names: string[];
+  regionNames: string; // comma-joined
+  regionCodes: string[];
+  names: string; // comma-joined
   scripts: string[];
 };
 
@@ -40,23 +64,28 @@ function getAllPossibleNames(entry: any) {
   return names;
 }
 
-function bestAutonym(entry: any) {
-  return entry.localnames ? entry.localnames[0] : entry.localname ?? undefined;
+function bestAutonym(entry: any, fallback: string) {
+  return entry.localnames ? entry.localnames[0] : undefined ?? fallback;
 }
 
-function parseLangtagsJson() {
-  let langs = {};
+export function parseLangtagsJson(): LanguageData[] {
+  const langs = {};
   const langTags2 = langTags as any[]; // TODO clean up
   for (const entry of langTags2) {
     if (!entry.iso639_3) {
-      console.log("skipping", entry);
+      // console.log("skipping", entry);
+      // langTags.json has metadata items in the same list mixed in with the data entries
       continue;
     }
 
     // TODO see if names and regions differ
 
     if (langs[entry.iso639_3]) {
-      langs[entry.iso639_3] = bestAutonym(entry) ?? langs[entry.iso639_3];
+      // console.log(langs[entry.iso639_3]);
+      langs[entry.iso639_3].autonym = bestAutonym(
+        entry,
+        langs[entry.iso639_3].autonym
+      );
       langs[entry.iso639_3].regionNames.add(entry.regionname);
       langs[entry.iso639_3].regionCodes.add(entry.region);
       langs[entry.iso639_3].regionCodes = new Set([
@@ -76,71 +105,76 @@ function parseLangtagsJson() {
       }
 
       langs[entry.iso639_3] = {
-        autonym: bestAutonym(entry),
-        code: entry.iso639_3,
-        regionNames: new Set(entry.regionname), // TODO what if undefined?
+        autonym: bestAutonym(entry, entry.name),
+        code: entry.iso639_3 as string,
+        regionNames: new Set([entry.regionname]),
         regionCodes,
         names: getAllPossibleNames(entry),
-        scripts: new Set(entry.script),
-      };
+        scripts: new Set([entry.script]),
+      } as InternalLanguageData;
     }
   }
+  const reformattedLangs = Object.values(langs).map(
+    (langData: InternalLanguageData) => {
+      return {
+        autonym: uncomma(langData.autonym),
+        code: langData.code,
+        regionNames: [...langData.regionNames]
+          .map(uncomma)
+          .join(COMMA_SEPARATOR),
+        regionCodes: [...langData.regionCodes],
+        names: [...langData.names].map(uncomma).join(COMMA_SEPARATOR),
+        scripts: [...langData.scripts],
+      } as LanguageData;
+    }
+  );
+
+  //  add unknown language
+  reformattedLangs.push({
+    autonym: "Unknown",
+    code: "qaa",
+    regionNames: "",
+    regionCodes: [],
+    scripts: ["Latn"],
+    names: "",
+  } as LanguageData);
+
   // write langs to a json file
-  const data = JSON.stringify(langs);
-  const fs = require("fs");
-  fs.writeFileSync("langs.json", data);
+  // const data = JSON.stringify(langs);
+  // const fs = require("fs");
+  // fs.writeFileSync("langs.json", reformattedLangs);
+
+  return reformattedLangs;
 }
 
+const languages: LanguageData[] = parseLangtagsJson();
+
 export function searchForLanguage(queryString: string) {
-  // parseLangtagsJson();
   // TODO make sure it is case insensitive
-  const langTags2 = langTags as any[]; // TODO clean up
-  //   langTags2.push({
-  //   full: 'qaa',
-  //   iso639_3: 'qaa',
-  //   localname: 'Unknown',
-  //   name: 'Unknown',
-  //   regionname: 'anywhere',
-  //   script: 'Latn',
-  //   sldr: false,
-  //   tag: 'qaa',
-  // });
+  // const langTags2 = langTags as any[]; // TODO clean up
 
   const fuseOptions = {
     isCaseSensitive: false,
-    // includeScore: false,
-    // shouldSort: true,
-    // includeMatches: false,
-    // findAllMatches: false,
+    includeMatches: true,
     minMatchCharLength: 2,
-    // location: 0,
     threshold: 0.3,
-    // distance: 100,
+
+    // to make matches that start with the query string appear first
+    location: 0,
+    distance: 10000, // we want match score to fall off very slowly, really use distance from the beginning only as a tie breaker
     // useExtendedSearch: false,
-    ignoreLocation: true,
     // ignoreFieldNorm: false,
     // fieldNormWeight: 1,
-    keys: ["tag", "name", "localname", "regionname", "names", "full"],
+    keys: [
+      { name: "autonym", weight: 10 },
+      { name: "code", weight: 10 },
+      { name: "names", weight: 8 },
+      { name: "regionNames", weight: 1 },
+    ],
   };
-  const fuse = new Fuse(langTags2, fuseOptions);
+  const fuse = new Fuse(languages, fuseOptions);
 
   const results = fuse.search(queryString);
-
-  return results.map((r) =>
-    languageEntryToLanguageCardData(r.item)
-  ) as LanguageData[];
-}
-
-function languageEntryToLanguageCardData(entry: any): LanguageData {
-  const regionsList = [entry.region] as string[];
-  if (entry.regions) {
-    regionsList.push(...entry.regions);
-  }
-  return {
-    autonym: entry.name,
-    code: entry.tag,
-    regions: regionsList,
-    names: entry.names ?? [entry.name],
-    scripts: [entry.script],
-  };
+  console.log(results);
+  return results.map((r) => r.item) as LanguageData[];
 }
