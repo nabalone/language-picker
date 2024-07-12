@@ -7,11 +7,11 @@ import { LanguageCard } from "./LanguageCard";
 import {
   AppBar,
   Button,
+  CardActionArea,
   Icon,
   InputAdornment,
   List,
   ListItem,
-  ListItemButton,
   OutlinedInput,
   ThemeProvider,
   Toolbar,
@@ -29,6 +29,7 @@ import {
 } from "./useLanguagePicker";
 import { debounce } from "lodash";
 import "./styles.css";
+import { bloomModifySearchResults } from "./modifySearchResults";
 
 const testScriptData: ScriptData = {
   code: "TestScript",
@@ -41,7 +42,7 @@ function App() {
     status,
     onSearchStringChange,
     onSelectNode,
-  } = useLanguagePicker();
+  } = useLanguagePicker(bloomModifySearchResults);
   // languageDataTree is a list of the top level nodes. There is no root node
 
   function isSelectedNode(node: LanguageTreeNode): boolean {
@@ -69,7 +70,7 @@ function App() {
         <div
           id="lang-picker-container"
           css={css`
-            width: 1250px;
+            width: 1500px;
             background-color: ${COLORS.greys[0]};
             border-radius: 10px;
             position: relative;
@@ -109,17 +110,18 @@ function App() {
             css={css`
               height: 750px;
               display: flex;
+              padding: 15px 25px 25px 25px;
             `}
           >
             <div
               id="left-pane"
               css={css`
-                padding: 10px 25px;
                 width: 50%;
                 height: 100%;
                 position: relative;
                 display: flex; // to make the language list overflow scroll work
                 flex-direction: column;
+                padding-right: 13px;
               `}
             >
               <label htmlFor="search-bar">
@@ -127,7 +129,7 @@ function App() {
                   css={css`
                     color: ${COLORS.greys[3]};
                     font-weight: bold;
-                    margin-bottom: 10px;
+                    margin-bottom: 5px;
                   `}
                 >
                   Search by name, code, or country
@@ -182,11 +184,11 @@ function App() {
                       `}
                       key={languageNode.id}
                     >
-                      <ListItemButton
+                      <CardActionArea
                         onClick={() => onSelectNode(languageNode)}
-                        css={css`
-                          width: 100%;
-                        `}
+                        // css={css`
+                        //   width: 100%;
+                        // `}
                       >
                         <LanguageCard
                           css={css`
@@ -199,20 +201,20 @@ function App() {
                           colorWhenNotSelected={COLORS.white}
                           colorWhenSelected={COLORS.blues[0]}
                         ></LanguageCard>
-                      </ListItemButton>
-                      {isSelectedNode(languageNode) && (
-                        <List
-                          css={css`
-                            display: flex;
-                            flex-direction: row;
-                            justify-content: flex-end;
-                            flex-wrap: wrap;
-                            // TODO do we want to scroll? Or wrap?
-                            padding-left: 30px;
-                          `}
-                        >
-                          {languageNode.childNodes.length > 1 &&
-                            languageNode.childNodes.map(
+                      </CardActionArea>
+                      {isSelectedNode(languageNode) &&
+                        languageNode.childNodes.length > 1 && (
+                          <List
+                            css={css`
+                              display: flex;
+                              flex-direction: row;
+                              justify-content: flex-end;
+                              flex-wrap: wrap;
+                              // TODO do we want to scroll? Or wrap?
+                              padding-left: 30px;
+                            `}
+                          >
+                            {languageNode.childNodes.map(
                               (scriptNode: LanguageTreeNode) => {
                                 if (scriptNode.nodeType !== NodeType.Script) {
                                   // this shouldn't happen
@@ -225,31 +227,34 @@ function App() {
                                 return (
                                   <ListItem
                                     key={scriptNode.id}
-                                    onClick={() => onSelectNode(scriptNode)}
                                     css={css`
+                                      // TODO move this to the card
                                       margin-left: 0;
                                       padding-left: 0;
                                       width: fit-content;
                                     `}
                                   >
-                                    <ScriptCard
-                                      css={css`
-                                        min-width: 175px;
-                                      `}
-                                      scriptData={
-                                        scriptNode.nodeData as ScriptData
-                                      }
-                                      isSelected={isSelectedNode(scriptNode)}
-                                      colorWhenNotSelected={COLORS.white}
-                                      colorWhenSelected={COLORS.blues[1]}
-                                    />
-                                    {/* </ListItemButton> */}
+                                    <CardActionArea
+                                      onClick={() => onSelectNode(scriptNode)}
+                                    >
+                                      <ScriptCard
+                                        css={css`
+                                          min-width: 175px;
+                                        `}
+                                        scriptData={
+                                          scriptNode.nodeData as ScriptData
+                                        }
+                                        isSelected={isSelectedNode(scriptNode)}
+                                        colorWhenNotSelected={COLORS.white}
+                                        colorWhenSelected={COLORS.blues[1]}
+                                      />
+                                    </CardActionArea>
                                   </ListItem>
                                 );
                               }
                             )}
-                        </List>
-                      )}
+                          </List>
+                        )}
                     </ListItem>
 
                     // </>
@@ -264,7 +269,7 @@ function App() {
                 display: flex; // to make the language list overflow scroll work
                 flex-direction: column;
                 justify-content: flex-end;
-                padding: 10px 25px;
+                padding-left: 13px;
               `}
             >
               <div
@@ -305,9 +310,7 @@ function App() {
                   width: 100%;
                   display: flex;
                   justify-content: flex-end;
-                  // right: 0;
-                  // bottom: 0;
-                  // padding: 25px;
+                  padding-top: 15px;
                 `}
               >
                 <Button
@@ -344,13 +347,8 @@ export default App;
 
 // TODOs:
 
-// spacing between display this language this way and ok,
-// fix the padding around the dialog box
-// fix the hover/mui button. Make sure it is the right width and the spacing doesn't change for selected
-// box sizing is not working
-// put 25px of padding on everything, the whole box
 // southern uzbek shows up twice
-// underneath the autonym
+// english name underneath the autonym
 
 // fix the language name editor
 // highlighting of match string
@@ -363,10 +361,8 @@ export default App;
 
 // langtag needs to show on the right side
 
-// - hover on cards
 // - performance issues with selecting  due to rerendering all the cards?
 // - debounce - what to do (status)
-// - what to do about margin under the search bar?
 
 // We could use sx instead of css?
 // colored text of the text match

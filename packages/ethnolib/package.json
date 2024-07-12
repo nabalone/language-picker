@@ -9,6 +9,7 @@
     "dist/**"
   ],
   "scripts": {
+    "langtag-processing": "ts-node ./langtagProcessing.tsx",
     "build": "tsup ./index.tsx --format esm,cjs --dts --external react",
     "dev": "tsup ./index.tsx --format esm,cjs --watch --dts --external react",
     "typecheck": "tsc"
@@ -23,6 +24,7 @@
   },
   "devDependencies": {
     "tsup": "6.2.2",
-    "typescript": "^4.6.4"
+    "typescript": "^4.6.4",
+    "ts-node": "^10.9.2"
   }
 }

@@ -69,7 +69,9 @@ function readyToSubmit(state) {
   return node && !node.requiresFurtherSelection;
 }
 
-export const useLanguagePicker = () => {
+export const useLanguagePicker = (
+  modifySearchResults?: (results: LanguageData[]) => LanguageData[]
+) => {
   const [state, setState] = useState({
     languageDataTree: [] as LanguageTreeNode[],
     selectedNodeGeneology: [] as string[],
@@ -92,12 +94,18 @@ export const useLanguagePicker = () => {
       //   }),
     });
     // setTimeout(() => {
-    doSearchAndUpdate(searchString);
+    doSearchAndUpdate(searchString, modifySearchResults);
     // });
   };
 
-  async function doSearchAndUpdate(searchString: string) {
-    const languageList = searchForLanguage(searchString);
+  async function doSearchAndUpdate(
+    searchString: string,
+    modifySearchResults?: (results: LanguageData[]) => LanguageData[]
+  ) {
+    let languageList = searchForLanguage(searchString);
+    if (modifySearchResults) {
+      languageList = modifySearchResults(languageList);
+    }
     const languageDataTree = languageList.map((language) => {
       const languageNode: LanguageTreeNode = {
         nodeData: language,
