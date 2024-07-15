@@ -111,14 +111,24 @@ function parseLangtagsJson() {
   }
   const reformattedLangs = Object.values(langs).map(
     (langData: InternalLanguageData) => {
+      // console.log(langData.names);
+      langData.names.forEach(uncomma);
+      // console.log(langData.names);
+      langData.regionNames.forEach(uncomma);
       return {
         autonym: uncomma(langData.autonym),
         code: langData.code,
-        regionNames: [...langData.regionNames]
-          .map(uncomma)
-          .join(COMMA_SEPARATOR),
+        regionNames: [
+          // TODO do this better
+          ...new Set([...langData.regionNames].map(uncomma)),
+        ].join(COMMA_SEPARATOR),
+
         regionCodes: [...langData.regionCodes],
-        names: [...langData.names].map(uncomma).join(COMMA_SEPARATOR),
+        names: [
+          // TODO do this better
+          ...new Set([...langData.names].map(uncomma)),
+        ].join(COMMA_SEPARATOR),
+
         scripts: [...langData.scripts],
       };
     }
@@ -140,13 +150,21 @@ function parseLangtagsJson() {
   let allScripts = new Set();
   for (const lang of reformattedLangs) {
     allScripts = new Set([...allScripts, ...lang.scripts]);
-    if (lang.scripts.length > 1) {
-      scriptOptions = new Set([...scriptOptions, ...lang.scripts]);
+    const langScripts = new Set(lang.scripts);
+    // TODO do this more cleanly
+    langScripts.delete("Brai");
+    langScripts.delete("Zxxx");
+    langScripts.delete("Zyyy");
+    langScripts.delete("Zzzz");
+    langScripts.delete("Zmth");
+    langScripts.delete("Zsym");
+    if (langScripts.size > 1) {
+      scriptOptions = new Set([...scriptOptions, ...langScripts]);
     }
   }
-  console.log(scriptOptions);
   console.log([...scriptOptions].length);
   console.log([...allScripts].length);
+  fs.writeFileSync("scripts.json", [...scriptOptions].sort().join("\n"));
 
   //   write langs to a json file
   const data = JSON.stringify(reformattedLangs);

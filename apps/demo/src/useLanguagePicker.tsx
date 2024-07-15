@@ -13,16 +13,6 @@ export enum Status {
   MoreSelectionNeeded = "moreSelectionNeeded",
 }
 
-const SCRIPTS_TO_EXCLUDE = new Set([
-  "Brai",
-  "Zyyy",
-  "Zxxx",
-  "Zinh",
-  "Zmth",
-  "Zsye",
-  "Zsym",
-]);
-
 export type LanguageTreeNode = {
   nodeData: LanguageData | ScriptData | null;
   id: string;
@@ -116,10 +106,7 @@ export const useLanguagePicker = (
         childNodes: [],
       };
 
-      const filteredScripts = language.scripts.filter(
-        (script) => !SCRIPTS_TO_EXCLUDE.has(script)
-      );
-      const scriptNodes = filteredScripts.map((script) => {
+      const scriptNodes = language.scripts.map((script) => {
         const scriptData = {
           code: script,
         } as ScriptData;

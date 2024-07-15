@@ -37,5 +37,15 @@ export function searchForLanguage(queryString: string) {
   const fuse = new Fuse(languages as LanguageData[], fuseOptions);
 
   const results = fuse.search(queryString);
-  return results.map((r) => r.item) as LanguageData[];
+  console.log(results);
+  const resultsToReturn = [];
+  for (const result of results) {
+    for (const match of result.matches) {
+      for (const matchInstanceLocation of match.indices) {
+        const [start, end] = matchInstanceLocation;
+        const matchInstance = match.value.slice(start, end + 1);
+        console.log(matchInstance);
+      }
+    }
+  }
 }

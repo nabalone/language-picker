@@ -1,23 +1,15 @@
 import { LanguageData } from "@languagepicker/ethnolib";
+import {
+  filterScripts,
+  substituteInSpecialEntry,
+} from "./modifySearchResultUtils";
 
 export function bloomModifySearchResults(
   results: LanguageData[]
 ): LanguageData[] {
-  return simplifyEnglish(results);
-}
-
-function substituteInSpecialEntry(
-  specialEntry: LanguageData,
-  results: LanguageData[]
-): LanguageData[] {
-  console.log("here");
-  return results.map((result) =>
-    // result.code === specialEntry.code ? specialEntry : result
-    {
-      if (result.code === specialEntry.code) console.log("result", result);
-      return result.code === specialEntry.code ? specialEntry : result;
-    }
-  );
+  let modifiedResults = simplifyEnglish(results);
+  modifiedResults = filterScripts(scriptFilter, modifiedResults);
+  return modifiedResults;
 }
 
 const simpleEnglishResult: LanguageData = {
@@ -28,7 +20,19 @@ const simpleEnglishResult: LanguageData = {
   names: "English",
   scripts: ["Latin"],
 };
-
 function simplifyEnglish(results: LanguageData[]): LanguageData[] {
   return substituteInSpecialEntry(simpleEnglishResult, results);
 }
+
+const SCRIPTS_TO_EXCLUDE = new Set([
+  "Brai",
+  "Zyyy",
+  "Zxxx",
+  "Zinh",
+  "Zmth",
+  "Zsye",
+  "Zsym",
+]);
+const scriptFilter = (script: string) => !SCRIPTS_TO_EXCLUDE.has(script);
+
+// function filterLangCodes(langCode: string): boolean {

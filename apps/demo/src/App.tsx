@@ -164,6 +164,7 @@ function App() {
               <List
                 css={css`
                   overflow-y: auto;
+                  scrollbar-width: thick;
                 `}
               >
                 {languageDataTree.map((languageNode) => {
@@ -344,34 +345,3 @@ function App() {
 }
 
 export default App;
-
-// TODOs:
-
-// southern uzbek shows up twice
-// english name underneath the autonym
-
-// fix the language name editor
-// highlighting of match string
-// fix trailing commas
-
-// Special cases: English, no regions list, no script options
-// french  - only show francais,
-// make a field of top level search but not show?
-// make a filter that does all the filtering. Filters out middle french, etc.
-
-// langtag needs to show on the right side
-
-// - performance issues with selecting  due to rerendering all the cards?
-// - debounce - what to do (status)
-
-// We could use sx instead of css?
-// colored text of the text match
-
-// x we need to make sure we can reopen the tree to a particular expansion state (e.g. language and script)
-// x cut off country names after two lines, css rule to add an ellipsis (text overflow). Like as handled in bloom library (e.g. search bloom library covid english).
-// x don't cut off alternative names. Pretty or balanced or something to wrap at a nice place
-// This is a nice to have. colored text of the text match. If you have an exact match, don't highlight the similar matches. Otherwise hilight the closest matches
-// check the language search of blorg to see how to debounce searching
-
-// TODO jeni bister email - searching dialect names should pull up the language also
-// maybe a "Variants include" field?
