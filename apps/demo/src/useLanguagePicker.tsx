@@ -25,6 +25,14 @@ export type LanguageTreeNode = {
   childNodes: LanguageTreeNode[];
 };
 
+interface LanguagePickerState {
+  languageDataTree: LanguageTreeNode[];
+  selectedNodeGeneology: string[];
+  status: Status;
+  languageDisplayName: string;
+  // currentlyProcessingTimeoutId: number | undefined;
+}
+
 function getNodesInGeneology(
   geneology: string[],
   languageDataTree: LanguageTreeNode[]
@@ -51,7 +59,7 @@ function getNodeByGeneology(
   return nodesInGeneology && nodesInGeneology[nodesInGeneology.length - 1];
 }
 
-function readyToSubmit(state) {
+function readyToSubmit(state: LanguagePickerState) {
   const node = getNodeByGeneology(
     state.selectedNodeGeneology,
     state.languageDataTree
@@ -68,7 +76,7 @@ export const useLanguagePicker = (
     status: Status.MoreSelectionNeeded,
     languageDisplayName: "",
     // currentlyProcessingTimeoutId: undefined as number | undefined, // TODO what is the default number?
-  });
+  } as LanguagePickerState);
 
   const onSearchStringChange = (searchString: string) => {
     // if (state.currentlyProcessingTimeoutId) {
@@ -82,7 +90,7 @@ export const useLanguagePicker = (
       //   currentlyProcessingTimeoutId: setTimeout(() => {
       //     doSearchAndUpdate(searchString);
       //   }),
-    });
+    } as LanguagePickerState);
     // setTimeout(() => {
     doSearchAndUpdate(searchString, modifySearchResults);
     // });
@@ -127,24 +135,41 @@ export const useLanguagePicker = (
       languageDataTree,
       selectedNodeGeneology: [] as string[],
       status: Status.MoreSelectionNeeded,
+      languageDisplayName: "",
       //   currentlyProcessingTimeoutId: undefined,
-    });
+    } as LanguagePickerState);
   }
 
   const onSelectNode = (node: LanguageTreeNode) => {
     if (node) {
-      setState({ ...state, selectedNodeGeneology: node.nodeGeneology });
+      setState({
+        ...state,
+        selectedNodeGeneology: node.nodeGeneology,
+        languageDisplayName:
+          node.nodeType === NodeType.Language
+            ? node.nodeData?.autonym || ""
+            : state.languageDisplayName,
+      });
     } else {
       console.error("no node selected");
     }
   };
+
+  const changeLanguageDisplayName = (displayName: string) => {
+    setState({
+      ...state,
+      languageDisplayName: displayName,
+    });
+  };
   return {
     languageDataTree: state.languageDataTree,
     selectedNodeGeneology: state.selectedNodeGeneology,
+    languageDisplayName: state.languageDisplayName,
     status: readyToSubmit(state)
       ? Status.ReadyToSubmit
       : Status.MoreSelectionNeeded,
     onSearchStringChange,
     onSelectNode,
+    changeLanguageDisplayName,
   };
 };

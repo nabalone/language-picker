@@ -39,9 +39,11 @@ function App() {
   const {
     languageDataTree,
     selectedNodeGeneology,
+    languageDisplayName,
     status,
     onSearchStringChange,
     onSelectNode,
+    changeLanguageDisplayName,
   } = useLanguagePicker(bloomModifySearchResults);
   // languageDataTree is a list of the top level nodes. There is no root node
 
@@ -207,6 +209,7 @@ function App() {
                         languageNode.childNodes.length > 1 && (
                           <List
                             css={css`
+                              width: 100%;
                               display: flex;
                               flex-direction: row;
                               justify-content: flex-end;
@@ -229,9 +232,8 @@ function App() {
                                   <ListItem
                                     key={scriptNode.id}
                                     css={css`
-                                      // TODO move this to the card
-                                      margin-left: 0;
-                                      padding-left: 0;
+                                      margin-right: 0;
+                                      padding-right: 0;
                                       width: fit-content;
                                     `}
                                   >
@@ -301,7 +303,10 @@ function App() {
                   `}
                   id="language-name-bar"
                   fullWidth
-                  onChange={(e) => {}}
+                  value={languageDisplayName}
+                  onChange={(e) => {
+                    changeLanguageDisplayName(e.target.value);
+                  }}
                 />
               </div>
               <div
