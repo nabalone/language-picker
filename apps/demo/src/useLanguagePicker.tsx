@@ -90,10 +90,10 @@ export const useLanguagePicker = (
     // if (state.currentlyProcessingTimeoutId) {
     //   clearTimeout(state.currentlyProcessingTimeoutId);
     // }
+    unSelectAll();
     setState({
       ...state,
       languageDataTree: [],
-      selectedNodeGeneology: [],
       status: Status.Loading,
       //   currentlyProcessingTimeoutId: setTimeout(() => {
       //     doSearchAndUpdate(searchString);
@@ -105,6 +105,15 @@ export const useLanguagePicker = (
       doSearchAndUpdate(searchString, modifySearchResults);
     }
     // });
+  };
+
+  const unSelectAll = () => {
+    console.log("unselecting all");
+    setState({
+      ...state,
+      selectedNodeGeneology: [],
+      languageDisplayName: "",
+    });
   };
 
   async function doSearchAndUpdate(
@@ -185,5 +194,6 @@ export const useLanguagePicker = (
     onSearchStringChange,
     onSelectNode,
     changeLanguageDisplayName,
+    unSelectAll,
   };
 };

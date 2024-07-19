@@ -3,13 +3,15 @@ import { css } from "@emotion/react";
 import { CardContent, Card } from "@mui/material";
 import React, { PropsWithChildren } from "react";
 import { COLORS } from "./Colors";
+import { ClickAwayListener } from "@mui/base/ClickAwayListener";
 
-interface EthnolibCardProps {
+export interface EthnolibCardProps {
   isSelected: boolean;
   //   childrenWhenSelected: React.ReactNode[];
   colorWhenNotSelected: string;
   colorWhenSelected: string;
   className?: string;
+  onClickAway?: () => void;
 }
 
 export const EthnolibCard: React.FunctionComponent<
@@ -19,7 +21,7 @@ export const EthnolibCard: React.FunctionComponent<
     ? props.colorWhenSelected
     : props.colorWhenNotSelected;
   return (
-    <>
+    <ClickAwayListener onClickAway={props.onClickAway || (() => {})}>
       <Card
         variant="outlined"
         css={css`
@@ -31,6 +33,6 @@ export const EthnolibCard: React.FunctionComponent<
       >
         <CardContent>{props.children}</CardContent>
       </Card>
-    </>
+    </ClickAwayListener>
   );
 };

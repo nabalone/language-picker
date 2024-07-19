@@ -30,6 +30,7 @@ import {
 import { debounce } from "lodash";
 import "./styles.css";
 import { bloomModifySearchResults } from "./modifySearchResults";
+import { CustomLanguageCard } from "./CustomLanguageCard";
 
 function App() {
   const {
@@ -40,6 +41,7 @@ function App() {
     onSearchStringChange,
     onSelectNode,
     changeLanguageDisplayName,
+    unSelectAll,
   } = useLanguagePicker(bloomModifySearchResults);
   // languageDataTree is a list of the top level nodes. There is no root node
 
@@ -108,7 +110,6 @@ function App() {
             css={css`
               height: 750px;
               display: flex;
-              padding: 15px 25px 25px 25px;
             `}
           >
             <div
@@ -119,7 +120,7 @@ function App() {
                 position: relative;
                 display: flex; // to make the language list overflow scroll work
                 flex-direction: column;
-                padding-right: 13px;
+                padding: 15px 15px 25px 25px;
               `}
             >
               <label htmlFor="search-bar">
@@ -163,6 +164,8 @@ function App() {
                 css={css`
                   overflow-y: auto;
                   scrollbar-width: thick;
+                  flex-basis: 0;
+                  flex-grow: 1;
                 `}
               >
                 {languageDataTree.map((languageNode) => {
@@ -199,6 +202,9 @@ function App() {
                           isSelected={isSelectedNode(languageNode)}
                           colorWhenNotSelected={COLORS.white}
                           colorWhenSelected={COLORS.blues[0]}
+                          onClickAway={() => {
+                            if (isSelectedNode(languageNode)) unSelectAll();
+                          }}
                         ></LanguageCard>
                       </CardActionArea>
                       {isSelectedNode(languageNode) &&
@@ -246,6 +252,11 @@ function App() {
                                         isSelected={isSelectedNode(scriptNode)}
                                         colorWhenNotSelected={COLORS.white}
                                         colorWhenSelected={COLORS.blues[1]}
+                                        // TODO this is repeat of language card on click away
+                                        onClickAway={() => {
+                                          if (isSelectedNode(languageNode))
+                                            unSelectAll();
+                                        }}
                                       />
                                     </CardActionArea>
                                   </ListItem>
@@ -260,15 +271,24 @@ function App() {
                   );
                 })}
               </List>
+              <CustomLanguageCard
+                selectedNodeGeneology={selectedNodeGeneology}
+                searchString={}
+                css={css`
+                  margin-top: 15px;
+                  max-width: 50%;
+                `}
+              ></CustomLanguageCard>
             </div>
             <div
               id="right-pane"
               css={css`
                 width: 50%;
-                display: flex; // to make the language list overflow scroll work
+                display: flex;
                 flex-direction: column;
                 justify-content: flex-end;
-                padding-left: 13px;
+                background-color: white;
+                padding: 15px 25px 25px 15px;
               `}
             >
               <div

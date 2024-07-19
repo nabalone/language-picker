@@ -1,13 +1,12 @@
-import { EthnolibCard } from "./EthnolibCard";
+import { EthnolibCard, EthnolibCardProps } from "./EthnolibCard";
 import { Typography } from "@mui/material";
 import { ScriptData } from "@languagepicker/ethnolib";
 
-export const ScriptCard: React.FunctionComponent<{
+interface ScriptCardProps extends EthnolibCardProps {
   scriptData: ScriptData;
-  isSelected: boolean;
-  colorWhenNotSelected: string;
-  colorWhenSelected: string;
-}> = (props) => {
+}
+
+export const ScriptCard: React.FunctionComponent<ScriptCardProps> = (props) => {
   return (
     <EthnolibCard {...props}>
       <Typography variant="h5">{props.scriptData.name}</Typography>
