@@ -1,20 +1,21 @@
-import Fuse from "fuse.js";
+import Fuse, { FuseResult } from "fuse.js";
 import languages from "./langs.json";
-export type LanguageData = {
-  autonym: string;
-  code: string; // ISO 639-3
-  regionNames: string; // comma-joined
-  regionCodes: string[];
-  names: string; // comma-joined
-  scripts: string[];
-};
+import { LanguageData, ScriptData } from "./dataHolderTypes";
 
-// const languages: LanguageData[] = parseLangtagsJson();
+const fuseSearchKeys = [
+  { name: "autonym", weight: 10 },
+  { name: "exonym", weight: 10 },
+  { name: "code", weight: 8 },
+  { name: "names", weight: 8 },
+  { name: "regionNames", weight: 1 },
+];
 
-export function searchForLanguage(queryString: string) {
-  // TODO make sure it is case insensitive
-  // const langTags2 = langTags as any[]; // TODO clean up
+export const fieldsToSearch = fuseSearchKeys.map((key) => key.name);
 
+export function searchForLanguage(
+  queryString: string
+): FuseResult<LanguageData>[] {
+  console.log(languages[10]);
   const fuseOptions = {
     isCaseSensitive: false,
     includeMatches: true,
@@ -27,25 +28,12 @@ export function searchForLanguage(queryString: string) {
     // useExtendedSearch: false,
     // ignoreFieldNorm: false,
     // fieldNormWeight: 1,
-    keys: [
-      { name: "autonym", weight: 10 },
-      { name: "code", weight: 10 },
-      { name: "names", weight: 8 },
-      { name: "regionNames", weight: 1 },
-    ],
+    keys: fuseSearchKeys,
   };
   const fuse = new Fuse(languages as LanguageData[], fuseOptions);
 
-  const results = fuse.search(queryString);
-  console.log(results);
-  const resultsToReturn = [];
-  for (const result of results) {
-    for (const match of result.matches) {
-      for (const matchInstanceLocation of match.indices) {
-        const [start, end] = matchInstanceLocation;
-        const matchInstance = match.value.slice(start, end + 1);
-        console.log(matchInstance);
-      }
-    }
-  }
+  return fuse.search(queryString);
 }
+
+// TODO do I need to do it this way?
+export { LanguageData, ScriptData };

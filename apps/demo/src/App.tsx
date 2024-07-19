@@ -2,7 +2,7 @@
 // todo eslint
 /** @jsxImportSource @emotion/react */
 import { css } from "@emotion/react";
-import { LanguageData } from "@languagepicker/ethnolib";
+import { LanguageData, ScriptData } from "@languagepicker/ethnolib";
 import { LanguageCard } from "./LanguageCard";
 import {
   AppBar,
@@ -19,7 +19,7 @@ import {
   createTheme,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
-import { ScriptCard, ScriptData } from "./ScriptCard";
+import { ScriptCard } from "./ScriptCard";
 import { COLORS } from "./Colors";
 import {
   LanguageTreeNode,
@@ -30,10 +30,6 @@ import {
 import { debounce } from "lodash";
 import "./styles.css";
 import { bloomModifySearchResults } from "./modifySearchResults";
-
-const testScriptData: ScriptData = {
-  code: "TestScript",
-};
 
 function App() {
   const {

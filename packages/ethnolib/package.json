@@ -1,17 +1,18 @@
 {
   "name": "@languagepicker/ethnolib",
   "version": "1.2.0",
+  "type": "module",
   "description": "",
   "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
+  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
     "dist/**"
   ],
   "scripts": {
-    "langtag-processing": "ts-node ./langtagProcessing.tsx",
-    "build": "tsup ./index.tsx --format esm,cjs --dts --external react",
-    "dev": "tsup ./index.tsx --format esm,cjs --watch --dts --external react",
+    "langtag-processing": "ts-node-esm ./langtagProcessing.tsx",
+    "build": "tsup ./index.tsx --format esm --dts --external react",
+    "dev": "tsup ./index.tsx --format esm --watch --dts --external react",
     "typecheck": "tsc"
   },
   "keywords": [],
@@ -19,12 +20,14 @@
   "license": "ISC",
   "dependencies": {
     "fuse.js": "^7.0.0",
+    "iso-15924": "^3.2.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
+    "@types/node": "^20.14.11",
+    "ts-node": "^10.9.2",
     "tsup": "6.2.2",
-    "typescript": "^4.6.4",
-    "ts-node": "^10.9.2"
+    "typescript": "^4.6.4"
   }
 }

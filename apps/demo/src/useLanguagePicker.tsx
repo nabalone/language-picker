@@ -1,6 +1,11 @@
-import { LanguageData, searchForLanguage } from "@languagepicker/ethnolib";
+import {
+  LanguageData,
+  ScriptData,
+  searchForLanguage,
+} from "@languagepicker/ethnolib";
 import { useState } from "react";
-import { ScriptData } from "./ScriptCard";
+import { stripResultMetadata } from "./modifySearchResults";
+import { FuseResult } from "fuse.js";
 
 export enum NodeType {
   Language = "language",
@@ -68,7 +73,10 @@ function readyToSubmit(state: LanguagePickerState) {
 }
 
 export const useLanguagePicker = (
-  modifySearchResults?: (results: LanguageData[]) => LanguageData[]
+  modifySearchResults?: (
+    results: FuseResult<LanguageData>[],
+    searchString: string
+  ) => LanguageData[]
 ) => {
   const [state, setState] = useState({
     languageDataTree: [] as LanguageTreeNode[],
@@ -92,17 +100,26 @@ export const useLanguagePicker = (
       //   }),
     } as LanguagePickerState);
     // setTimeout(() => {
-    doSearchAndUpdate(searchString, modifySearchResults);
+    if (searchString.length > 1) {
+      // the query for one character is slow and probably not useful
+      doSearchAndUpdate(searchString, modifySearchResults);
+    }
     // });
   };
 
   async function doSearchAndUpdate(
     searchString: string,
-    modifySearchResults?: (results: LanguageData[]) => LanguageData[]
+    modifySearchResults?: (
+      results: FuseResult<LanguageData>[],
+      searchString?: string
+    ) => LanguageData[]
   ) {
-    let languageList = searchForLanguage(searchString);
+    const searchResults = searchForLanguage(searchString);
+    let languageList: LanguageData[];
     if (modifySearchResults) {
-      languageList = modifySearchResults(languageList);
+      languageList = modifySearchResults(searchResults, searchString);
+    } else {
+      languageList = stripResultMetadata(searchResults);
     }
     const languageDataTree = languageList.map((language) => {
       const languageNode: LanguageTreeNode = {
@@ -115,13 +132,10 @@ export const useLanguagePicker = (
       };
 
       const scriptNodes = language.scripts.map((script) => {
-        const scriptData = {
-          code: script,
-        } as ScriptData;
         return {
-          nodeData: scriptData,
-          id: script,
-          nodeGeneology: [language.code, script],
+          nodeData: script,
+          id: script.code,
+          nodeGeneology: [language.code, script.code],
           nodeType: NodeType.Script,
           requiresFurtherSelection: false,
           childNodes: [],
@@ -147,7 +161,7 @@ export const useLanguagePicker = (
         selectedNodeGeneology: node.nodeGeneology,
         languageDisplayName:
           node.nodeType === NodeType.Language
-            ? node.nodeData?.autonym || ""
+            ? node.nodeData?.autonym || node.nodeData?.exonym || ""
             : state.languageDisplayName,
       });
     } else {

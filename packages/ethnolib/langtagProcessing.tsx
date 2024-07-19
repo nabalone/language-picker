@@ -1,13 +1,14 @@
-type LanguageData = {
-  autonym: string;
-  code: string;
-  regionNames: string;
-  regionCodes: string[];
-  names: string;
-  scripts: string[];
-};
+import { iso15924 } from "iso-15924";
+import langTags from "./langtags.json" assert { type: "json" };
+import * as fs from "fs";
+import { LanguageData, ScriptData } from "./dataHolderTypes";
 
 const COMMA_SEPARATOR = ", ";
+
+const scriptNames = iso15924.reduce(
+  (acc, entry) => ({ ...acc, [entry.code]: entry.name }),
+  {}
+);
 
 // turn "Uzbek, Northern" into "Northern Uzbek"
 function uncomma(str: string) {
@@ -22,6 +23,7 @@ function uncomma(str: string) {
 }
 type InternalLanguageData = {
   autonym: string;
+  exonym: string;
   code: string;
   regionNames: Set<string>;
   regionCodes: Set<string>;
@@ -64,8 +66,8 @@ function bestAutonym(entry: any, fallback: string) {
 }
 
 function parseLangtagsJson() {
-  const fs = require("fs");
-  const langTags = require("./langtags.json");
+  // const fs = require("fs");
+  // const langTags = require("./langtags.json");
 
   const langs = {};
   const langTags2 = langTags as any[]; // TODO clean up
@@ -76,6 +78,7 @@ function parseLangtagsJson() {
       continue;
     }
 
+    // We already have an entry with this code, combine with it
     if (langs[entry.iso639_3]) {
       langs[entry.iso639_3].autonym = bestAutonym(
         entry,
@@ -100,7 +103,8 @@ function parseLangtagsJson() {
       }
 
       langs[entry.iso639_3] = {
-        autonym: bestAutonym(entry, entry.name),
+        autonym: bestAutonym(entry, undefined),
+        exonym: entry.name,
         code: entry.iso639_3 as string,
         regionNames: new Set([entry.regionname]),
         regionCodes,
@@ -111,60 +115,71 @@ function parseLangtagsJson() {
   }
   const reformattedLangs = Object.values(langs).map(
     (langData: InternalLanguageData) => {
-      // console.log(langData.names);
+      // Don't repeat the autonym and exonym in the names list
+      langData.names.delete(langData.autonym);
+      langData.names.delete(langData.exonym);
       langData.names.forEach(uncomma);
-      // console.log(langData.names);
       langData.regionNames.forEach(uncomma);
       return {
         autonym: uncomma(langData.autonym),
+        exonym: uncomma(langData.exonym),
         code: langData.code,
         regionNames: [
           // TODO do this better
           ...new Set([...langData.regionNames].map(uncomma)),
         ].join(COMMA_SEPARATOR),
-
+        scripts: [...new Set([...langData.scripts])].map((scriptCode) => {
+          return {
+            code: scriptCode,
+            name: uncomma(scriptNames[scriptCode]),
+          } as ScriptData;
+        }),
         regionCodes: [...langData.regionCodes],
         names: [
           // TODO do this better
           ...new Set([...langData.names].map(uncomma)),
         ].join(COMMA_SEPARATOR),
-
-        scripts: [...langData.scripts],
       };
     }
   );
 
+  const latinScriptData: ScriptData = {
+    code: "Latn",
+    name: "Latin",
+  };
+
   //  add unknown language
   //   TODO move this to the filter instead/
   reformattedLangs.push({
-    autonym: "Unknown",
+    autonym: undefined,
+    exonym: "Unknown",
     code: "qaa",
     regionNames: "",
     regionCodes: [],
-    scripts: ["Latn"],
+    scripts: [latinScriptData],
     names: "",
-  });
+  } as LanguageData);
 
   // counting scripts
-  let scriptOptions = new Set();
-  let allScripts = new Set();
-  for (const lang of reformattedLangs) {
-    allScripts = new Set([...allScripts, ...lang.scripts]);
-    const langScripts = new Set(lang.scripts);
-    // TODO do this more cleanly
-    langScripts.delete("Brai");
-    langScripts.delete("Zxxx");
-    langScripts.delete("Zyyy");
-    langScripts.delete("Zzzz");
-    langScripts.delete("Zmth");
-    langScripts.delete("Zsym");
-    if (langScripts.size > 1) {
-      scriptOptions = new Set([...scriptOptions, ...langScripts]);
-    }
-  }
-  console.log([...scriptOptions].length);
-  console.log([...allScripts].length);
-  fs.writeFileSync("scripts.json", [...scriptOptions].sort().join("\n"));
+  // let scriptOptions = new Set();
+  // let allScripts = new Set();
+  // for (const lang of reformattedLangs) {
+  //   allScripts = new Set([...allScripts, ...lang.scripts]);
+  //   const langScripts = new Set(lang.scripts);
+  //   // TODO do this more cleanly
+  //   langScripts.delete("Brai");
+  //   langScripts.delete("Zxxx");
+  //   langScripts.delete("Zyyy");
+  //   langScripts.delete("Zzzz");
+  //   langScripts.delete("Zmth");
+  //   langScripts.delete("Zsym");
+  //   if (langScripts.size > 1) {
+  //     scriptOptions = new Set([...scriptOptions, ...langScripts]);
+  //   }
+  // }
+  // console.log([...scriptOptions].length);
+  // console.log([...allScripts].length);
+  // fs.writeFileSync("scripts.json", [...scriptOptions].sort().join("\n"));
 
   //   write langs to a json file
   const data = JSON.stringify(reformattedLangs);
