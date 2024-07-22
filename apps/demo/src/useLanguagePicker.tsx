@@ -4,7 +4,7 @@ import {
   searchForLanguage,
 } from "@languagepicker/ethnolib";
 import { useState } from "react";
-import { stripResultMetadata } from "./modifySearchResults";
+import { stripDemarcation, stripResultMetadata } from "./modifySearchResults";
 import { FuseResult } from "fuse.js";
 
 export enum NodeType {
@@ -12,11 +12,13 @@ export enum NodeType {
   Script = "script",
 }
 
-export enum Status {
-  Loading = "loading",
-  ReadyToSubmit = "readyToSubmit",
-  MoreSelectionNeeded = "moreSelectionNeeded",
-}
+// export enum Status {
+//   Loading = "loading",
+//   Ready = "ready",
+// ReadyToSubmit = "readyToSubmit",
+// TODO do we still want status? we can now check for script selected...
+// MoreSelectionNeeded = "moreSelectionNeeded",
+// }
 
 export type LanguageTreeNode = {
   nodeData: LanguageData | ScriptData | null;
@@ -32,44 +34,18 @@ export type LanguageTreeNode = {
 
 interface LanguagePickerState {
   languageDataTree: LanguageTreeNode[];
-  selectedNodeGeneology: string[];
-  status: Status;
+  selectedLanguageNode: LanguageTreeNode | undefined;
+  selectedScriptNode: LanguageTreeNode | undefined;
+  // status: Status;
   languageDisplayName: string;
   // currentlyProcessingTimeoutId: number | undefined;
 }
 
-function getNodesInGeneology(
-  geneology: string[],
-  languageDataTree: LanguageTreeNode[]
-): LanguageTreeNode[] {
-  const nodesInGeneology = [] as LanguageTreeNode[];
-
-  let currentNodeList = languageDataTree;
-  for (const id of geneology) {
-    const currentNode = currentNodeList.find((node) => node.id === id);
-    if (!currentNode) {
-      return nodesInGeneology;
-    }
-    nodesInGeneology.push(currentNode);
-    currentNodeList = currentNode.childNodes;
-  }
-  return nodesInGeneology;
-}
-
-function getNodeByGeneology(
-  geneology: string[],
-  languageDataTree: LanguageTreeNode[]
-): LanguageTreeNode | undefined {
-  const nodesInGeneology = getNodesInGeneology(geneology, languageDataTree);
-  return nodesInGeneology && nodesInGeneology[nodesInGeneology.length - 1];
-}
+// TODO get rid of all the tree and node language?
 
 function readyToSubmit(state: LanguagePickerState) {
-  const node = getNodeByGeneology(
-    state.selectedNodeGeneology,
-    state.languageDataTree
-  );
-  return node && !node.requiresFurtherSelection;
+  // There shouldn't be a selectedScriptNode without a selectedLanguageNode anyway...
+  return !!state.selectedLanguageNode && !!state.selectedScriptNode;
 }
 
 export const useLanguagePicker = (
@@ -80,9 +56,10 @@ export const useLanguagePicker = (
 ) => {
   const [state, setState] = useState({
     languageDataTree: [] as LanguageTreeNode[],
-    selectedNodeGeneology: [] as string[],
-    status: Status.MoreSelectionNeeded,
+    selectedLanguageNode: undefined,
+    selectedScriptNode: undefined,
     languageDisplayName: "",
+    // status: Status.Ready,
     // currentlyProcessingTimeoutId: undefined as number | undefined, // TODO what is the default number?
   } as LanguagePickerState);
 
@@ -94,7 +71,7 @@ export const useLanguagePicker = (
     setState({
       ...state,
       languageDataTree: [],
-      status: Status.Loading,
+      // status: Status.Loading,
       //   currentlyProcessingTimeoutId: setTimeout(() => {
       //     doSearchAndUpdate(searchString);
       //   }),
@@ -107,11 +84,14 @@ export const useLanguagePicker = (
     // });
   };
 
+  // TODO is this still used?
   const unSelectAll = () => {
     console.log("unselecting all");
     setState({
       ...state,
-      selectedNodeGeneology: [],
+      selectedLanguageNode: undefined,
+      selectedScriptNode: undefined,
+      // status: Status.Ready,
       languageDisplayName: "",
     });
   };
@@ -120,7 +100,7 @@ export const useLanguagePicker = (
     searchString: string,
     modifySearchResults?: (
       results: FuseResult<LanguageData>[],
-      searchString?: string
+      searchString: string
     ) => LanguageData[]
   ) {
     const searchResults = searchForLanguage(searchString);
@@ -156,25 +136,34 @@ export const useLanguagePicker = (
     setState({
       ...state,
       languageDataTree,
-      selectedNodeGeneology: [] as string[],
-      status: Status.MoreSelectionNeeded,
+      selectedLanguageNode: undefined,
+      selectedScriptNode: undefined,
       languageDisplayName: "",
+      // status: Status.Ready,
       //   currentlyProcessingTimeoutId: undefined,
     } as LanguagePickerState);
   }
 
   const onSelectNode = (node: LanguageTreeNode) => {
-    if (node) {
+    if (!node) {
+      console.error("no node selected");
+      return;
+    }
+    if (node.nodeType === NodeType.Language) {
       setState({
         ...state,
-        selectedNodeGeneology: node.nodeGeneology,
-        languageDisplayName:
-          node.nodeType === NodeType.Language
-            ? node.nodeData?.autonym || node.nodeData?.exonym || ""
-            : state.languageDisplayName,
+        selectedLanguageNode: node,
+        selectedScriptNode:
+          node.childNodes.length == 1 ? node.childNodes[0] : undefined,
+        languageDisplayName: stripDemarcation(
+          node.nodeData?.autonym || node.nodeData?.exonym || ""
+        ),
       });
-    } else {
-      console.error("no node selected");
+    } else if (node.nodeType === NodeType.Script) {
+      setState({
+        ...state,
+        selectedScriptNode: node,
+      });
     }
   };
 
@@ -186,11 +175,10 @@ export const useLanguagePicker = (
   };
   return {
     languageDataTree: state.languageDataTree,
-    selectedNodeGeneology: state.selectedNodeGeneology,
+    selectedLanguageNode: state.selectedLanguageNode,
+    selectedScriptNode: state.selectedScriptNode,
     languageDisplayName: state.languageDisplayName,
-    status: readyToSubmit(state)
-      ? Status.ReadyToSubmit
-      : Status.MoreSelectionNeeded,
+    readyToSubmit: readyToSubmit(state),
     onSearchStringChange,
     onSelectNode,
     changeLanguageDisplayName,

@@ -30,6 +30,11 @@ function demarcateResults(results: FuseResult<LanguageData>[]) {
   return resultsCopy;
 }
 
+export function stripDemarcation(str: string): string {
+  if (!str) return str;
+  return str.replaceAll(START_OF_MATCH, "").replaceAll(END_OF_MATCH, "");
+}
+
 export function stripResultMetadata(
   results: FuseResult<LanguageData>[]
 ): LanguageData[] {

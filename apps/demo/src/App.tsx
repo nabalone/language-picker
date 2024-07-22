@@ -35,9 +35,10 @@ import { CustomLanguageCard } from "./CustomLanguageCard";
 function App() {
   const {
     languageDataTree,
-    selectedNodeGeneology,
+    selectedLanguageNode,
+    selectedScriptNode,
     languageDisplayName,
-    status,
+    readyToSubmit,
     onSearchStringChange,
     onSelectNode,
     changeLanguageDisplayName,
@@ -45,9 +46,6 @@ function App() {
   } = useLanguagePicker(bloomModifySearchResults);
   // languageDataTree is a list of the top level nodes. There is no root node
 
-  function isSelectedNode(node: LanguageTreeNode): boolean {
-    return selectedNodeGeneology.includes(node.id);
-  }
   const theme = createTheme({
     palette: {
       primary: {
@@ -199,15 +197,18 @@ function App() {
                           languageCardData={
                             languageNode.nodeData as LanguageData
                           }
-                          isSelected={isSelectedNode(languageNode)}
+                          isSelected={
+                            languageNode.id === selectedLanguageNode?.id
+                          }
                           colorWhenNotSelected={COLORS.white}
                           colorWhenSelected={COLORS.blues[0]}
-                          onClickAway={() => {
-                            if (isSelectedNode(languageNode)) unSelectAll();
-                          }}
+                          // TODO
+                          // onClickAway={() => {
+                          // if (isSelectedNode(languageNode)) unSelectAll();
+                          // }}
                         ></LanguageCard>
                       </CardActionArea>
-                      {isSelectedNode(languageNode) &&
+                      {languageNode.id === selectedLanguageNode?.id &&
                         languageNode.childNodes.length > 1 && (
                           <List
                             css={css`
@@ -249,14 +250,17 @@ function App() {
                                         scriptData={
                                           scriptNode.nodeData as ScriptData
                                         }
-                                        isSelected={isSelectedNode(scriptNode)}
+                                        isSelected={
+                                          scriptNode.id ===
+                                          selectedScriptNode?.id
+                                        }
                                         colorWhenNotSelected={COLORS.white}
                                         colorWhenSelected={COLORS.blues[1]}
-                                        // TODO this is repeat of language card on click away
-                                        onClickAway={() => {
-                                          if (isSelectedNode(languageNode))
-                                            unSelectAll();
-                                        }}
+                                        // TODO
+                                        // onClickAway={() => {
+                                        //   if (isSelectedNode(languageNode))
+                                        //     unSelectAll();
+                                        // }}
                                       />
                                     </CardActionArea>
                                   </ListItem>
@@ -272,8 +276,8 @@ function App() {
                 })}
               </List>
               <CustomLanguageCard
-                selectedNodeGeneology={selectedNodeGeneology}
-                searchString={}
+                selectedLanguageNode={selectedLanguageNode}
+                selectedScriptNode={selectedScriptNode}
                 css={css`
                   margin-top: 15px;
                   max-width: 50%;
@@ -343,7 +347,7 @@ function App() {
                   `}
                   variant="contained"
                   color="primary"
-                  disabled={status !== Status.ReadyToSubmit}
+                  disabled={!readyToSubmit}
                 >
                   OK
                 </Button>

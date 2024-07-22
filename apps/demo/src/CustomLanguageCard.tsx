@@ -6,23 +6,21 @@ import EditIcon from "@mui/icons-material/Edit";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import { Button as BaseButton, buttonClasses } from "@mui/base/Button";
 import { COLORS } from "./Colors";
-import { END_OF_MATCH, START_OF_MATCH } from "./modifySearchResults";
-
-function stripDemarcation(str: string): string {
-  if (!str) return str;
-  return str.replaceAll(START_OF_MATCH, "").replaceAll(END_OF_MATCH, "");
-}
+import { stripDemarcation } from "./modifySearchResults";
+import { LanguageTreeNode } from "./useLanguagePicker";
 
 // TODO fix memo
 export const CustomLanguageCard: React.FunctionComponent<{
-  selectedNodeGeneology: string[];
+  selectedLanguageNode: LanguageTreeNode | undefined;
+  selectedScriptNode: LanguageTreeNode | undefined;
 }> = memo((props) => {
   let tagPreview = "";
-  const languageSelected = props.selectedNodeGeneology.length > 0;
-  if (languageSelected) {
-    tagPreview = `${stripDemarcation(props.selectedNodeGeneology[0])}-${
-      stripDemarcation(props.selectedNodeGeneology[1]) || "__"
-    }-____`;
+  if (props.selectedLanguageNode) {
+    tagPreview = stripDemarcation(
+      `${props.selectedLanguageNode.id}-${
+        props.selectedScriptNode?.id || "__"
+      }-____`
+    );
   } else {
     tagPreview = "qaa-X-____"; // TODO actually this should be the start of the search string
   }
@@ -33,7 +31,7 @@ export const CustomLanguageCard: React.FunctionComponent<{
       {...props}
       color="primary"
       css={css`
-        // background-color: whifte;
+        // background-color: white;
         box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.2),
           0px 4px 5px 0px rgba(0, 0, 0, 0.14),
           0px 1px 10px 0px rgba(0, 0, 0, 0.12);
@@ -53,9 +51,9 @@ export const CustomLanguageCard: React.FunctionComponent<{
           // justify-content: flex-start;
         `}
       >
-        {languageSelected && <EditIcon />}
+        {props.selectedLanguageNode && <EditIcon />}
         {/* TODO align button */}
-        {languageSelected ? "Customize" : "Create Unlisted Language"}
+        {props.selectedLanguageNode ? "Customize" : "Create Unlisted Language"}
         {/* {props.languageCardData?.name} */}
       </Typography>
       <div
