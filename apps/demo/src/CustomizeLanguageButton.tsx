@@ -1,6 +1,5 @@
 /** @jsxImportSource @emotion/react */
 import { css } from "@emotion/react";
-import { memo } from "react";
 import { Button, Tooltip, Typography } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
@@ -10,10 +9,10 @@ import { stripDemarcation } from "./modifySearchResults";
 import { LanguageTreeNode } from "./useLanguagePicker";
 
 // TODO fix memo
-export const CustomLanguageCard: React.FunctionComponent<{
+export const CustomizeLanguageButton: React.FunctionComponent<{
   selectedLanguageNode: LanguageTreeNode | undefined;
   selectedScriptNode: LanguageTreeNode | undefined;
-}> = memo((props) => {
+}> = (props) => {
   let tagPreview = "";
   if (props.selectedLanguageNode) {
     tagPreview = stripDemarcation(
@@ -83,4 +82,4 @@ export const CustomLanguageCard: React.FunctionComponent<{
       </div>
     </Button>
   );
-});
+};

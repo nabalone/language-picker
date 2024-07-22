@@ -30,7 +30,9 @@ import {
 import { debounce } from "lodash";
 import "./styles.css";
 import { bloomModifySearchResults } from "./modifySearchResults";
-import { CustomLanguageCard } from "./CustomLanguageCard";
+import { CustomizeLanguageButton } from "./CustomizeLanguageButton";
+import { useState } from "react";
+import { CustomizeLanguageDialog } from "./CustomizeLanguageDialog";
 
 function App() {
   const {
@@ -45,6 +47,9 @@ function App() {
     unSelectAll,
   } = useLanguagePicker(bloomModifySearchResults);
   // languageDataTree is a list of the top level nodes. There is no root node
+
+  const [customizeLanguageDialogOpen, setCustomizeLanguageDialogOpen] =
+    useState(false);
 
   const theme = createTheme({
     palette: {
@@ -275,14 +280,21 @@ function App() {
                   );
                 })}
               </List>
-              <CustomLanguageCard
-                selectedLanguageNode={selectedLanguageNode}
-                selectedScriptNode={selectedScriptNode}
+              <CardActionArea
                 css={css`
-                  margin-top: 15px;
-                  max-width: 50%;
+                  width: fit-content;
+                  margin-top: 20px;
                 `}
-              ></CustomLanguageCard>
+                onClick={() => setCustomizeLanguageDialogOpen(true)}
+              >
+                <CustomizeLanguageButton
+                  selectedLanguageNode={selectedLanguageNode}
+                  selectedScriptNode={selectedScriptNode}
+                  css={css`
+                    min-width: 300px;
+                  `}
+                ></CustomizeLanguageButton>
+              </CardActionArea>
             </div>
             <div
               id="right-pane"
@@ -365,6 +377,13 @@ function App() {
           </div>
         </div>
       </div>
+
+      <CustomizeLanguageDialog
+        open={customizeLanguageDialogOpen}
+        selectedLanguageNode={selectedLanguageNode}
+        selectedScriptNode={selectedScriptNode}
+        onClose={() => setCustomizeLanguageDialogOpen(false)}
+      />
     </ThemeProvider>
   );
 }
