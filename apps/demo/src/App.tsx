@@ -42,7 +42,7 @@ function App() {
     languageDisplayName,
     readyToSubmit,
     onSearchStringChange,
-    onSelectNode,
+    toggleSelectNode,
     changeLanguageDisplayName,
     unSelectAll,
   } = useLanguagePicker(bloomModifySearchResults);
@@ -190,7 +190,7 @@ function App() {
                       key={languageNode.id}
                     >
                       <CardActionArea
-                        onClick={() => onSelectNode(languageNode)}
+                        onClick={() => toggleSelectNode(languageNode)}
                         // css={css`
                         //   width: 100%;
                         // `}
@@ -246,7 +246,9 @@ function App() {
                                     `}
                                   >
                                     <CardActionArea
-                                      onClick={() => onSelectNode(scriptNode)}
+                                      onClick={() =>
+                                        toggleSelectNode(scriptNode)
+                                      }
                                     >
                                       <ScriptCard
                                         css={css`

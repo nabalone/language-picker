@@ -144,12 +144,22 @@ export const useLanguagePicker = (
     } as LanguagePickerState);
   }
 
-  const onSelectNode = (node: LanguageTreeNode) => {
+  const toggleSelectNode = (node: LanguageTreeNode) => {
     if (!node) {
       console.error("no node selected");
       return;
-    }
-    if (node.nodeType === NodeType.Language) {
+    } else if (node.id === state.selectedLanguageNode?.id) {
+      // Clicking on the selected language node unselects it and thus everything
+      unSelectAll();
+      return;
+    } else if (node.id === state.selectedScriptNode?.id) {
+      // clicking on the selected script node unselects it
+      setState({
+        ...state,
+        selectedScriptNode: undefined,
+      });
+      return;
+    } else if (node.nodeType === NodeType.Language) {
       setState({
         ...state,
         selectedLanguageNode: node,
@@ -180,7 +190,7 @@ export const useLanguagePicker = (
     languageDisplayName: state.languageDisplayName,
     readyToSubmit: readyToSubmit(state),
     onSearchStringChange,
-    onSelectNode,
+    toggleSelectNode: toggleSelectNode,
     changeLanguageDisplayName,
     unSelectAll,
   };
