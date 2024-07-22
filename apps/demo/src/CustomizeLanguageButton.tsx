@@ -26,7 +26,6 @@ export const CustomizeLanguageButton: React.FunctionComponent<{
   return (
     <Button
       variant="outlined"
-      // startIcon={cardSelected ? <EditIcon /> : null}
       {...props}
       color="primary"
       css={css`
@@ -48,9 +47,16 @@ export const CustomizeLanguageButton: React.FunctionComponent<{
           font-weight: bold;
           // text-align: left;
           // justify-content: flex-start;
+          display: flex; // for the icon
         `}
       >
-        {props.selectedLanguageNode && <EditIcon />}
+        {props.selectedLanguageNode && (
+          <EditIcon
+            css={css`
+              margin-right: 5px;
+            `}
+          />
+        )}
         {/* TODO align button */}
         {props.selectedLanguageNode ? "Customize" : "Create Unlisted Language"}
         {/* {props.languageCardData?.name} */}

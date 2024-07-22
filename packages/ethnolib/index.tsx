@@ -15,7 +15,6 @@ export const fieldsToSearch = fuseSearchKeys.map((key) => key.name);
 export function searchForLanguage(
   queryString: string
 ): FuseResult<LanguageData>[] {
-  console.log(languages[10]);
   const fuseOptions = {
     isCaseSensitive: false,
     includeMatches: true,
