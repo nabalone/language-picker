@@ -13,4 +13,7 @@ export type LanguageData = {
   names: string; // comma-joined
   scripts: ScriptData[];
   variants?: string; // comma-joined
+  alternativeTags: string[];
+  isForMacrolanguageDisambiguation?: boolean;
+  isMacrolanguage?: boolean;
 };

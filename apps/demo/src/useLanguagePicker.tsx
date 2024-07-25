@@ -32,12 +32,19 @@ export type LanguageTreeNode = {
   childNodes: LanguageTreeNode[];
 };
 
+export type OptionalLangTagData = {
+  unlistedLanguageName?: string;
+  region?: string;
+  dialect?: string;
+};
+
 interface LanguagePickerState {
   languageDataTree: LanguageTreeNode[];
   selectedLanguageNode: LanguageTreeNode | undefined;
   selectedScriptNode: LanguageTreeNode | undefined;
   // status: Status;
   languageDisplayName: string;
+  optionalLangTagData: OptionalLangTagData;
   // currentlyProcessingTimeoutId: number | undefined;
 }
 
@@ -67,14 +74,12 @@ export const useLanguagePicker = (
     // if (state.currentlyProcessingTimeoutId) {
     //   clearTimeout(state.currentlyProcessingTimeoutId);
     // }
-    unSelectAll();
     setState({
       ...state,
       languageDataTree: [],
-      // status: Status.Loading,
-      //   currentlyProcessingTimeoutId: setTimeout(() => {
-      //     doSearchAndUpdate(searchString);
-      //   }),
+      selectedLanguageNode: undefined,
+      selectedScriptNode: undefined,
+      languageDisplayName: "",
     } as LanguagePickerState);
     // setTimeout(() => {
     if (searchString.length > 1) {
@@ -82,6 +87,13 @@ export const useLanguagePicker = (
       doSearchAndUpdate(searchString, modifySearchResults);
     }
     // });
+  };
+
+  const setOptionalLangTagData = (data: OptionalLangTagData) => {
+    setState({
+      ...state,
+      optionalLangTagData: data,
+    });
   };
 
   // TODO is this still used?
@@ -103,7 +115,7 @@ export const useLanguagePicker = (
       searchString: string
     ) => LanguageData[]
   ) {
-    const searchResults = searchForLanguage(searchString);
+    const searchResults = searchForLanguage(searchString).slice(0, 50);
     let languageList: LanguageData[];
     if (modifySearchResults) {
       languageList = modifySearchResults(searchResults, searchString);
@@ -183,15 +195,25 @@ export const useLanguagePicker = (
       languageDisplayName: displayName,
     });
   };
+  let currentTag = "";
+  if (state.selectedLanguageNode) {
+    currentTag = stripDemarcation(
+      state.selectedLanguageNode.id +
+        (state.selectedScriptNode ? "-" + state.selectedScriptNode.id : "")
+    );
+  }
   return {
     languageDataTree: state.languageDataTree,
     selectedLanguageNode: state.selectedLanguageNode,
     selectedScriptNode: state.selectedScriptNode,
     languageDisplayName: state.languageDisplayName,
+    currentTag,
     readyToSubmit: readyToSubmit(state),
     onSearchStringChange,
     toggleSelectNode: toggleSelectNode,
     changeLanguageDisplayName,
     unSelectAll,
+    optionalLangTagData: state.optionalLangTagData,
+    setOptionalLangTagData, // TODO this is dangerous in potential combinations with other state changes
   };
 };

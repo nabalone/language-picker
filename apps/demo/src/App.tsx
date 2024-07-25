@@ -40,11 +40,13 @@ function App() {
     selectedLanguageNode,
     selectedScriptNode,
     languageDisplayName,
+    currentTag,
     readyToSubmit,
     onSearchStringChange,
     toggleSelectNode,
     changeLanguageDisplayName,
     unSelectAll,
+    setOptionalLangTagData,
   } = useLanguagePicker(bloomModifySearchResults);
   // languageDataTree is a list of the top level nodes. There is no root node
 
@@ -343,6 +345,14 @@ function App() {
                   }}
                 />
               </div>
+              <Typography
+                css={css`
+                  color: ${COLORS.greys[3]};
+                  font-family: "Roboto Mono", monospace;
+                `}
+              >
+                {currentTag}
+              </Typography>
               <div
                 id="buttons-container"
                 css={css`
@@ -384,7 +394,9 @@ function App() {
         open={customizeLanguageDialogOpen}
         selectedLanguageNode={selectedLanguageNode}
         selectedScriptNode={selectedScriptNode}
+        searchString={"TODO"}
         onClose={() => setCustomizeLanguageDialogOpen(false)}
+        setOptionalLangTagData={setOptionalLangTagData}
       />
     </ThemeProvider>
   );

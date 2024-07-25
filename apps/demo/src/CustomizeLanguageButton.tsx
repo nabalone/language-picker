@@ -16,9 +16,7 @@ export const CustomizeLanguageButton: React.FunctionComponent<{
   let tagPreview = "";
   if (props.selectedLanguageNode) {
     tagPreview = stripDemarcation(
-      `${props.selectedLanguageNode.id}-${
-        props.selectedScriptNode?.id || "__"
-      }-____`
+      `${props.selectedLanguageNode.id}-${props.selectedScriptNode?.id || "__"}`
     );
   } else {
     tagPreview = "qaa-X-____"; // TODO actually this should be the start of the search string
