@@ -10,26 +10,19 @@ const scriptNames = iso15924.reduce(
   {}
 );
 
-function getMacrolangs() {
-  const macrolangs = new Set();
-  // read iso-639-3-macrolanguages.tab
-  // downloaded from https://iso639-3.sil.org/sites/iso639-3/files/downloads/iso-639-3-macrolanguages.tab
-  const macrolangsFile = fs.readFileSync(
-    "iso-639-3-macrolanguages.tab",
-    "utf8"
-  );
-  for (const line of macrolangsFile.split("\n")) {
+function getIso639_3CodeDetails() {
+  const codeDetails = new Set();
+  // downloaded from https://iso639-3.sil.org/sites/iso639-3/files/downloads/iso-639-3.tab
+  const codeDetailsFile = fs.readFileSync("iso-639-3.tab", "utf8");
+  for (const line of codeDetailsFile.split("\n")) {
     if (line.length === 0) {
       continue;
     }
     const parts = line.split("\t");
-    if (parts.length !== 3) {
-      console.log("skipping macrolangs line", line);
-      continue;
-    }
-    macrolangs.add(parts[0]);
+
+    codeDetails.add(parts[0]);
   }
-  return macrolangs;
+  return codeDetails;
 }
 
 // turn "Uzbek, Northern" into "Northern Uzbek"
@@ -155,12 +148,12 @@ function parseLangtagsJson() {
 
   const langs = {};
   const langTags2 = langTags as any[]; // TODO clean up
-  const macrolangs = getMacrolangs();
+  const iso639_3CodeDetails = getIso639_3CodeDetails();
   for (const entry of langTags2) {
     addLangtagsEntry(entry, langs);
 
     // Macrolanguage/specific language handling. See README
-    if (macrolangs.has(entry.iso639_3)) {
+    if (iso639_3CodeDetails.has(entry.iso639_3)) {
       const iso639_3Codes = new Set([entry.iso639_3]);
       for (const tag of entry.tags || []) {
         const iso639_3Code = findPotentialIso639_3Code(tag);

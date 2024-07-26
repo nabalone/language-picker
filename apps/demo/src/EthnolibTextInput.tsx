@@ -1,4 +1,4 @@
-import { OutlinedInput, Typography } from "@mui/material";
+import { OutlinedInput, TextField, Typography } from "@mui/material";
 import { css } from "@emotion/react";
 import { COLORS } from "./Colors";
 
@@ -6,6 +6,7 @@ export const EthnolibTextInput: React.FunctionComponent<{
   id: string;
   label: string;
 }> = ({ id, label, ...otherInputProps }) => {
+  console.log("otherInputProps", otherInputProps);
   return (
     <div>
       <label htmlFor={id}>
@@ -19,7 +20,7 @@ export const EthnolibTextInput: React.FunctionComponent<{
           {label}
         </Typography>
       </label>
-      <OutlinedInput
+      <TextField
         type="text"
         css={css`
           background-color: white;

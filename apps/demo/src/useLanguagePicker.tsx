@@ -12,14 +12,6 @@ export enum NodeType {
   Script = "script",
 }
 
-// export enum Status {
-//   Loading = "loading",
-//   Ready = "ready",
-// ReadyToSubmit = "readyToSubmit",
-// TODO do we still want status? we can now check for script selected...
-// MoreSelectionNeeded = "moreSelectionNeeded",
-// }
-
 export type LanguageTreeNode = {
   nodeData: LanguageData | ScriptData | null;
   id: string;
@@ -32,10 +24,21 @@ export type LanguageTreeNode = {
   childNodes: LanguageTreeNode[];
 };
 
-export type OptionalLangTagData = {
-  unlistedLanguageName?: string;
+export type CustomLangTagDetails = {
+  displayName?: string;
+  scriptOverride?: string;
   region?: string;
+  unlistedLanguageName?: string; // combine with dialect?
   dialect?: string;
+  // TODO
+  // 4.  Variant subtags MUST be registered with IANA according to the
+  // rules in Section 3.5 of this document before being used to form
+  // language tags.  In order to distinguish variants from other types
+  // of subtags, registrations MUST meet the following length and
+  // content restrictions:
+
+  // 1.  Variant subtags that begin with a letter (a-z, A-Z) MUST be
+  //     at least five characters long.
 };
 
 interface LanguagePickerState {
@@ -44,7 +47,7 @@ interface LanguagePickerState {
   selectedScriptNode: LanguageTreeNode | undefined;
   // status: Status;
   languageDisplayName: string;
-  optionalLangTagData: OptionalLangTagData;
+  customLangTagDetails: CustomLangTagDetails;
   // currentlyProcessingTimeoutId: number | undefined;
 }
 
@@ -89,10 +92,19 @@ export const useLanguagePicker = (
     // });
   };
 
-  const setOptionalLangTagData = (data: OptionalLangTagData) => {
+  const saveCustomLangTagDetails = (details: CustomLangTagDetails) => {
+    for (const scriptNode of state.selectedLanguageNode?.childNodes || []) {
+      if (scriptNode.id === details.scriptOverride) {
+        selectNode(scriptNode);
+        details["scriptOverride"] = undefined;
+        break;
+      }
+    }
+    // TODO deal with presence/absence of fields
+    const updatedDetails = { ...state.customLangTagDetails, ...details };
     setState({
       ...state,
-      optionalLangTagData: data,
+      customLangTagDetails: updatedDetails,
     });
   };
 
@@ -105,6 +117,7 @@ export const useLanguagePicker = (
       selectedScriptNode: undefined,
       // status: Status.Ready,
       languageDisplayName: "",
+      customLangTagDetails: {},
     });
   };
 
@@ -115,7 +128,7 @@ export const useLanguagePicker = (
       searchString: string
     ) => LanguageData[]
   ) {
-    const searchResults = searchForLanguage(searchString).slice(0, 50);
+    const searchResults = searchForLanguage(searchString);
     let languageList: LanguageData[];
     if (modifySearchResults) {
       languageList = modifySearchResults(searchResults, searchString);
@@ -195,25 +208,43 @@ export const useLanguagePicker = (
       languageDisplayName: displayName,
     });
   };
-  let currentTag = "";
-  if (state.selectedLanguageNode) {
-    currentTag = stripDemarcation(
-      state.selectedLanguageNode.id +
-        (state.selectedScriptNode ? "-" + state.selectedScriptNode.id : "")
-    );
-  }
   return {
     languageDataTree: state.languageDataTree,
     selectedLanguageNode: state.selectedLanguageNode,
     selectedScriptNode: state.selectedScriptNode,
     languageDisplayName: state.languageDisplayName,
-    currentTag,
+    currentTag: createTag(
+      state.selectedLanguageNode?.id || "",
+      state.selectedScriptNode?.id,
+      state.customLangTagDetails?.region, // TODO code vs name
+      state.customLangTagDetails?.dialect
+    ),
     readyToSubmit: readyToSubmit(state),
     onSearchStringChange,
     toggleSelectNode: toggleSelectNode,
     changeLanguageDisplayName,
     unSelectAll,
-    optionalLangTagData: state.optionalLangTagData,
-    setOptionalLangTagData, // TODO this is dangerous in potential combinations with other state changes
+    customLangTagDetails: state.customLangTagDetails,
+    saveCustomLangTagDetails, // TODO this is dangerous in potential combinations with other state changes
   };
 };
+
+// TODO put this somewhere else
+export function createTag(
+  languageCode: string,
+  scriptCode?: string,
+  regionCode?: string,
+  dialect?: string
+) {
+  let tag = languageCode;
+  if (scriptCode) {
+    tag += `-${scriptCode}`;
+  }
+  if (regionCode) {
+    tag += `-${regionCode}`;
+  }
+  if (dialect) {
+    tag += `-${dialect}`;
+  }
+  return stripDemarcation(tag);
+}

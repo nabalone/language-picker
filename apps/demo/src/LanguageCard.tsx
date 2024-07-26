@@ -39,27 +39,31 @@ export const LanguageCard: React.FunctionComponent<LanguageCardProps> = memo(
             variant="body2"
             dangerouslySetDemarcatedText={props.languageCardData.code}
           />
-          <PartiallyBoldedTypography
-            variant="h5"
-            gutterBottom
-            css={css`
-              margin-top: 8px; // above elements don't have bottom-gutters because one is optional
-              // TODO Copilot did this and I don't understand it but it works
-              display: -webkit-box;
-              -webkit-line-clamp: 2;
-              -webkit-box-orient: vertical;
-              overflow: hidden;
-            `}
-            dangerouslySetDemarcatedText={`A language of ${props.languageCardData.regionNames}`}
-          />
-          <PartiallyBoldedTypography
-            variant="body2"
-            // Always show all the names
-            css={css`
-              text-wrap: balance;
-            `}
-            dangerouslySetDemarcatedText={props.languageCardData.names}
-          />
+          {props.languageCardData.regionNames && (
+            <PartiallyBoldedTypography
+              variant="h5"
+              gutterBottom
+              css={css`
+                margin-top: 8px; // above elements don't have bottom-gutters because one is optional
+                // TODO Copilot did this and I don't understand it but it works
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+              `}
+              dangerouslySetDemarcatedText={`A language of ${props.languageCardData.regionNames}`}
+            />
+          )}
+          {props.languageCardData.names && (
+            <PartiallyBoldedTypography
+              variant="body2"
+              // Always show all the names
+              css={css`
+                text-wrap: balance;
+              `}
+              dangerouslySetDemarcatedText={props.languageCardData.names}
+            />
+          )}
         </EthnolibCard>
       </>
     );
