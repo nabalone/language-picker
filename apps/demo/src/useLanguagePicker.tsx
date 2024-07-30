@@ -56,7 +56,6 @@ export function createTag(
     // Unlisted language
     return `qaa-x-${dialectCode}`;
   }
-
   // TODO watch out for null script override case
   let tag = languageCode;
   if (scriptCode) {
@@ -71,6 +70,15 @@ export function createTag(
   return stripDemarcation(tag);
 }
 
+// We show the unlisted language controls unles a language is selected
+export function showUnlistedLanguageControls(
+  selectedLanguageNode: OptionNode | undefined
+) {
+  return (
+    selectedLanguageNode === undefined ||
+    selectedLanguageNode.id === UNLISTED_LANGUAGE_NODE_ID
+  );
+}
 export const useLanguagePicker = (
   searchResultModifier?: (
     results: FuseResult<LanguageData>[],
@@ -85,7 +93,12 @@ export const useLanguagePicker = (
     OptionNode | undefined
   >();
   const [CustomizableLanguageDetails, setCustomizableLanguageDetails] =
-    useState<CustomizableLanguageDetails>({});
+    useState<CustomizableLanguageDetails>({
+      displayName: "",
+      scriptOverride: undefined,
+      region: "",
+      dialect: "",
+    });
 
   const isReadyToSubmit =
     !!selectedLanguageNode &&

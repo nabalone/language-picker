@@ -7,8 +7,8 @@ import Typography from "@mui/material/Typography";
 import {
   CustomizableLanguageDetails,
   OptionNode,
-  UNLISTED_LANGUAGE_NODE_ID,
   createTag,
+  showUnlistedLanguageControls,
 } from "./useLanguagePicker";
 import {
   Autocomplete,
@@ -58,34 +58,52 @@ export const CustomizeLanguageDialog: React.FunctionComponent<{
   searchString: string;
   onClose: () => void;
 }> = (props) => {
-  const selectedLanguageNodeData = props.selectedLanguageNode
-    ?.nodeData as LanguageData;
-  const selectedScriptNodeData = props.selectedScriptNode
-    ?.nodeData as ScriptData;
+  const isUnlistedLanguageDialog = showUnlistedLanguageControls(
+    props.selectedLanguageNode
+  );
+
+  // TODO replace all the { label: "", id: "" } with something else? just don't make uncontrolled inputs
+
+  // Store dialog state. Used to create a tag preview just inside the dialog, before saving anything
+  // but these should not persist when the dialog is closed
   const [dialogSelectedScriptCode, setDialogSelectedScriptCode] =
     React.useState<{
       label: string;
       id: string;
-    } | null>(
-      selectedScriptNodeData?.code
-        ? {
-            label: "TODO script name",
-            id: selectedScriptNodeData.code,
-          }
-        : null
-    );
-
+    }>({ label: "", id: "" }); // Will be set by the useEffect below
   const [dialogSelectedRegionCode, setDialogSelectedRegionCode] =
     React.useState<{
       label: string;
       id: string;
-    } | null>(null);
+    }>({ label: "", id: "" }); // Will be set by the useEffect below
   const [dialogSelectedDialectCode, setDialogSelectedDialectCode] =
-    React.useState<string>(
-      selectedLanguageNodeData?.code
+    React.useState<string>(""); // Will be set by the useEffect below
+  React.useEffect(() => {
+    setDialogSelectedScriptCode(
+      props.selectedScriptNode?.nodeData?.code
+        ? {
+            label: "TODO script name",
+            id: props.selectedScriptNode?.nodeData.code,
+          }
+        : { label: "", id: "" }
+    );
+    setDialogSelectedRegionCode({ label: "", id: "" });
+    setDialogSelectedDialectCode(
+      // if the user has not selected any language, not even the unlisted language button, then
+      // there will be no language details and we suggest the search string as a
+      // starting point for the unlisted language name (which is actually stored in the dialect field)
+      props.selectedLanguageNode
         ? props.customizableLanguageDetails.dialect || ""
         : props.searchString
     );
+  }, [
+    // TODO would it be better to make this just props?
+    props.selectedScriptNode,
+    props.open,
+    props.selectedLanguageNode,
+    props.customizableLanguageDetails.dialect,
+    props.searchString,
+  ]);
 
   return (
     <Dialog
@@ -96,13 +114,12 @@ export const CustomizeLanguageDialog: React.FunctionComponent<{
       `}
     >
       <DialogTitle>
-        {selectedLanguageNodeData
+        {isUnlistedLanguageDialog
           ? "Custom Language Tag"
           : "Unlisted Language Tag"}
       </DialogTitle>
 
-      {(!props.selectedLanguageNode ||
-        props.selectedLanguageNode.id === UNLISTED_LANGUAGE_NODE_ID) && (
+      {isUnlistedLanguageDialog && (
         <DialogContent>
           <EthnolibTextInput
             id="unlisted-lang-name-field"
@@ -123,7 +140,7 @@ export const CustomizeLanguageDialog: React.FunctionComponent<{
         </DialogContent>
       )}
 
-      {props.selectedLanguageNode && (
+      {!isUnlistedLanguageDialog && (
         <DialogContent>
           {/* TODO make these fuzzy search */}
           <label htmlFor="customize-script-field">
@@ -205,7 +222,7 @@ export const CustomizeLanguageDialog: React.FunctionComponent<{
               `}
             >
               {createTag(
-                selectedLanguageNodeData.code,
+                props.selectedLanguageNode?.nodeData?.code,
                 dialogSelectedScriptCode?.id,
                 dialogSelectedRegionCode?.id,
                 dialogSelectedDialectCode
@@ -237,7 +254,7 @@ export const CustomizeLanguageDialog: React.FunctionComponent<{
             variant="contained"
             color="primary"
             onClick={() => {
-              if (!selectedLanguageNodeData) {
+              if (isUnlistedLanguageDialog) {
                 props.selectUnlistedLanguage();
               }
               // save unlisted language

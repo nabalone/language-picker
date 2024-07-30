@@ -27,6 +27,7 @@ import {
   createTag,
   useLanguagePicker,
   UNLISTED_LANGUAGE_NODE_ID,
+  showUnlistedLanguageControls,
 } from "./useLanguagePicker";
 import { debounce } from "lodash";
 import "./styles.css";
@@ -298,10 +299,9 @@ function App() {
               >
                 <CustomizeLanguageButton
                   currentTagPreview={currentTagPreview}
-                  languageHasBeenSelected={
-                    selectedLanguageNode !== undefined &&
-                    selectedLanguageNode.id !== UNLISTED_LANGUAGE_NODE_ID
-                  }
+                  showAsUnlistedLanguage={showUnlistedLanguageControls(
+                    selectedLanguageNode
+                  )}
                   css={css`
                     min-width: 300px;
                   `}
@@ -361,6 +361,10 @@ function App() {
                   font-family: "Roboto Mono", monospace;
                 `}
               >
+                {/* If no language has been selected, the tag preview is qaa-x. 
+                We don't want to show this unless the user has specifically 
+                selected/modified the unlsited language (which sets selectedLanguageNode 
+                to unlisted language).*/}
                 {selectedLanguageNode !== undefined && currentTagPreview}
               </Typography>
               <div
@@ -402,8 +406,8 @@ function App() {
 
       <CustomizeLanguageDialog
         open={customizeLanguageDialogOpen}
-        selectedLanguageNodeData={selectedLanguageNode}
-        selectedScriptNodeData={selectedScriptNode}
+        selectedLanguageNode={selectedLanguageNode}
+        selectedScriptNode={selectedScriptNode}
         customizableLanguageDetails={CustomizableLanguageDetails}
         saveCustomizableLanguageDetails={saveCustomizableLanguageDetails}
         selectUnlistedLanguage={selectUnlistedLanguage}
