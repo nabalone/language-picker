@@ -1,4 +1,4 @@
-import { OutlinedInput, TextField, Typography } from "@mui/material";
+import { TextField, Typography } from "@mui/material";
 import { css } from "@emotion/react";
 import { COLORS } from "./Colors";
 

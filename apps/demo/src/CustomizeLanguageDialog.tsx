@@ -4,7 +4,12 @@ import Button from "@mui/material/Button";
 import DialogTitle from "@mui/material/DialogTitle";
 import Dialog from "@mui/material/Dialog";
 import Typography from "@mui/material/Typography";
-import { createTag } from "./useLanguagePicker";
+import {
+  CustomizableLanguageDetails,
+  OptionNode,
+  UNLISTED_LANGUAGE_NODE_ID,
+  createTag,
+} from "./useLanguagePicker";
 import {
   Autocomplete,
   DialogActions,
@@ -41,22 +46,31 @@ function getAllScriptOptions() {
   });
 }
 
-const CustomLanguageTagDialogContent: React.FunctionComponent<{
-  selectedLanguageNodeData: LanguageData;
-  selectedScriptNodeData: ScriptData | undefined;
-  // TODO region and variant need to be prepopulatable
+export const CustomizeLanguageDialog: React.FunctionComponent<{
+  open: boolean;
+  selectedLanguageNode: OptionNode | undefined;
+  selectedScriptNode: OptionNode | undefined;
+  customizableLanguageDetails: CustomizableLanguageDetails;
+  saveCustomizableLanguageDetails: (
+    details: CustomizableLanguageDetails
+  ) => void;
+  selectUnlistedLanguage: () => void;
+  searchString: string;
+  onClose: () => void;
 }> = (props) => {
-  // TODO React.useState or useSTate?
+  const selectedLanguageNodeData = props.selectedLanguageNode
+    ?.nodeData as LanguageData;
+  const selectedScriptNodeData = props.selectedScriptNode
+    ?.nodeData as ScriptData;
   const [dialogSelectedScriptCode, setDialogSelectedScriptCode] =
     React.useState<{
       label: string;
       id: string;
     } | null>(
-      // { label: "foo", id: "bar" }
-      props.selectedScriptNodeData?.code
+      selectedScriptNodeData?.code
         ? {
             label: "TODO script name",
-            id: props.selectedScriptNodeData?.code,
+            id: selectedScriptNodeData.code,
           }
         : null
     );
@@ -66,140 +80,141 @@ const CustomLanguageTagDialogContent: React.FunctionComponent<{
       label: string;
       id: string;
     } | null>(null);
-  const [dialogSelectedVariantCode, setDialogSelectedVariantCode] =
-    React.useState<string>("");
-  return (
-    <>
-      <DialogTitle>Custom Language Tag</DialogTitle>
-      <DialogContent>
-        {/* TODO make these fuzzy search */}
-        <label htmlFor="customize-script-field">
-          <Typography
-            css={css`
-              color: ${COLORS.greys[3]};
-              font-weight: bold;
-              margin-bottom: 5px;
-            `}
-          >
-            Script
-          </Typography>
-        </label>
-        <Autocomplete
-          value={dialogSelectedScriptCode}
-          onChange={(event, newValue: { label: string; id: string } | null) => {
-            setDialogSelectedScriptCode(newValue);
-          }}
-          disablePortal
-          id="combo-box-demo"
-          options={getAllScriptOptions()}
-          // sx={{ width: 300 }}
-          renderInput={(params) => (
-            <TextField {...params} id="customize-script-field" />
-          )}
-        />
-        <label htmlFor="customize-region-field">
-          <Typography
-            css={css`
-              color: ${COLORS.greys[3]};
-              font-weight: bold;
-              margin-bottom: 5px;
-            `}
-          >
-            Region
-          </Typography>
-        </label>
-        <Autocomplete
-          value={dialogSelectedRegionCode}
-          onChange={(event, newValue: { label: string; id: string } | null) => {
-            setDialogSelectedRegionCode(newValue);
-          }}
-          disablePortal
-          id="combo-box-demo"
-          options={getAllRegionOptions()}
-          renderInput={(params) => (
-            <TextField {...params} id="customize-region-field" />
-          )}
-        />
-        {/* TODO make this also a autocomplete with registered variants */}
-        <EthnolibTextInput
-          id="customize-variant-field"
-          label="Variant"
-          value={dialogSelectedVariantCode}
-          onChange={(event) => {
-            console.log("event", event);
-            setDialogSelectedVariantCode(event.target.value);
-          }}
-        />
-        <Typography>
-          Tag:
-          <span
-            css={css`
-              font-weight: bold;
-            `}
-          >
-            {createTag(
-              props.selectedLanguageNodeData.code,
-              dialogSelectedScriptCode?.id,
-              dialogSelectedRegionCode?.id,
-              dialogSelectedVariantCode
-            )}
-          </span>
-        </Typography>
-      </DialogContent>
-    </>
-  );
-};
-
-const UnlistedLanguageTagDialogContent: React.FunctionComponent<{
-  searchString: string;
-}> = (props) => {
-  return (
-    <>
-      <DialogTitle>Unlisted Language Tag</DialogTitle>
-      <DialogContent>
-        <EthnolibTextInput id="unlisted-lang-name-field" label="Name" />
-        <Typography>
-          Tag:
-          <span
-            css={css`
-              font-weight: bold;
-            `}
-          >{`qaa-x-${props.searchString}`}</span>
-        </Typography>
-      </DialogContent>
-    </>
-  );
-};
-
-export const CustomizeLanguageDialog: React.FunctionComponent<{
-  open: boolean;
-  selectedLanguageNodeData?: LanguageData | undefined;
-  selectedScriptNodeData?: ScriptData | undefined;
-  searchString: string;
-  saveCustomLangTagDetails: (details: CustomLangTagDetails) => void;
-  onClose: () => void;
-}> = (props) => {
-  const handleClose = () => {
-    props.onClose();
-  };
+  const [dialogSelectedDialectCode, setDialogSelectedDialectCode] =
+    React.useState<string>(
+      selectedLanguageNodeData?.code
+        ? props.customizableLanguageDetails.dialect || ""
+        : props.searchString
+    );
 
   return (
     <Dialog
-      onClose={handleClose}
+      onClose={props.onClose}
       open={props.open}
       css={css`
         padding: 25px;
       `}
     >
-      {props.selectedLanguageNodeData && (
-        <CustomLanguageTagDialogContent
-          selectedLanguageNodeData={props.selectedLanguageNodeData}
-          selectedScriptNodeData={props.selectedScriptNodeData}
-        />
+      <DialogTitle>
+        {selectedLanguageNodeData
+          ? "Custom Language Tag"
+          : "Unlisted Language Tag"}
+      </DialogTitle>
+
+      {(!props.selectedLanguageNode ||
+        props.selectedLanguageNode.id === UNLISTED_LANGUAGE_NODE_ID) && (
+        <DialogContent>
+          <EthnolibTextInput
+            id="unlisted-lang-name-field"
+            label="Name"
+            value={dialogSelectedDialectCode}
+            onChange={(event) => {
+              setDialogSelectedDialectCode(event.target.value);
+            }}
+          />
+          <Typography>
+            Tag:
+            <span
+              css={css`
+                font-weight: bold;
+              `}
+            >{`qaa-x-${props.searchString}`}</span>
+          </Typography>
+        </DialogContent>
       )}
-      {!props.selectedLanguageNodeData && (
-        <UnlistedLanguageTagDialogContent searchString={props.searchString} />
+
+      {props.selectedLanguageNode && (
+        <DialogContent>
+          {/* TODO make these fuzzy search */}
+          <label htmlFor="customize-script-field">
+            <Typography
+              css={css`
+                color: ${COLORS.greys[3]};
+                font-weight: bold;
+                margin-bottom: 5px;
+              `}
+            >
+              Script
+            </Typography>
+          </label>
+          <Autocomplete
+            value={dialogSelectedScriptCode}
+            onChange={(
+              event,
+              newValue: { label: string; id: string } | null
+            ) => {
+              setDialogSelectedScriptCode(newValue);
+            }}
+            disablePortal
+            id="combo-box-demo"
+            options={getAllScriptOptions()}
+            // sx={{ width: 300 }}
+            renderInput={(params) => (
+              <TextField {...params} id="customize-script-field" />
+            )}
+          />
+          <label htmlFor="customize-region-field">
+            <Typography
+              css={css`
+                color: ${COLORS.greys[3]};
+                font-weight: bold;
+                margin-bottom: 5px;
+              `}
+            >
+              Region
+            </Typography>
+          </label>
+          <Autocomplete
+            value={dialogSelectedRegionCode}
+            onChange={(
+              event,
+              newValue: { label: string; id: string } | null
+            ) => {
+              setDialogSelectedRegionCode(newValue);
+            }}
+            disablePortal
+            id="combo-box-demo"
+            options={getAllRegionOptions()}
+            renderInput={(params) => (
+              <TextField {...params} id="customize-region-field" />
+            )}
+          />
+          {/* TODO make this also a autocomplete with registered variants */}
+          {/* // TODO
+          // 4.  Variant subtags MUST be registered with IANA according to the
+          // rules in Section 3.5 of this document before being used to form
+          // language tags.  In order to distinguish variants from other types
+          // of subtags, registrations MUST meet the following length and
+          // content restrictions:
+
+          // 1.  Variant subtags that begin with a letter (a-z, A-Z) MUST be
+          //     at least five characters long. */}
+          <EthnolibTextInput
+            id="customize-variant-field"
+            label="Variant (dialect)"
+            value={dialogSelectedDialectCode}
+            onChange={(event) => {
+              setDialogSelectedDialectCode(event.target.value);
+            }}
+          />
+          <Typography>
+            Tag:
+            <span
+              css={css`
+                font-weight: bold;
+              `}
+            >
+              {createTag(
+                selectedLanguageNodeData.code,
+                dialogSelectedScriptCode?.id,
+                dialogSelectedRegionCode?.id,
+                dialogSelectedDialectCode
+              )}
+            </span>
+          </Typography>
+        </DialogContent>
       )}
+
       {/* // TODO abstract out these buttons which are copied from app.tsx */}
 
       <DialogActions>
@@ -222,12 +237,19 @@ export const CustomizeLanguageDialog: React.FunctionComponent<{
             variant="contained"
             color="primary"
             onClick={() => {
-              props.setCustomLangTagDetails({
-                scriptOverride: dialogSelectedScriptCode?.id,
+              if (!selectedLanguageNodeData) {
+                props.selectUnlistedLanguage();
+              }
+              // save unlisted language
+              props.saveCustomizableLanguageDetails({
+                scriptOverride: {
+                  code: dialogSelectedScriptCode?.id,
+                  name: dialogSelectedScriptCode?.label,
+                } as ScriptData,
                 region: dialogSelectedRegionCode?.id,
-                dialect: dialogSelectedVariantCode,
+                dialect: dialogSelectedDialectCode,
               });
-              handleClose();
+              props.onClose();
             }}
           >
             OK
@@ -238,7 +260,7 @@ export const CustomizeLanguageDialog: React.FunctionComponent<{
             `}
             variant="outlined"
             color="primary"
-            onClick={handleClose}
+            onClick={props.onClose}
           >
             Cancel
           </Button>

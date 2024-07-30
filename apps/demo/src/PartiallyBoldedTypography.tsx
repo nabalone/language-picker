@@ -1,5 +1,5 @@
 import { Typography } from "@mui/material";
-import { START_OF_MATCH, END_OF_MATCH } from "./modifySearchResults";
+import { START_OF_MATCH, END_OF_MATCH } from "./searchResultModifiers";
 import React from "react";
 
 export const PartiallyBoldedTypography: React.FunctionComponent<{

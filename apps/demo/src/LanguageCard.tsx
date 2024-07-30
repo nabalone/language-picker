@@ -70,6 +70,7 @@ export const LanguageCard: React.FunctionComponent<LanguageCardProps> = memo(
   }
 );
 
+// TODO move all this to the notion
 // chm/mhr/mrj is a good clean example
 // lav/ltg/lvs is same but without the macrolang field
 // kpe - do I include Guinea as a region?

@@ -4,7 +4,7 @@ import {
   searchForLanguage,
 } from "@languagepicker/ethnolib";
 import { useState } from "react";
-import { stripDemarcation, stripResultMetadata } from "./modifySearchResults";
+import { stripDemarcation, stripResultMetadata } from "./searchResultModifiers";
 import { FuseResult } from "fuse.js";
 
 export enum NodeType {
@@ -12,230 +12,52 @@ export enum NodeType {
   Script = "script",
 }
 
-export type LanguageTreeNode = {
+export type OptionNode = {
   nodeData: LanguageData | ScriptData | null;
   id: string;
-  nodeGeneology: string[]; // the ids of the path to this node
   nodeType: NodeType;
-  // its possible we want to enforce that the user always selects down to a leaf node,
-  //  in which case this would be unneccessary and we could just check for the presence
-  //  of childNodes. But I think that's not the case and some choices will be optional/have fallbacks
-  requiresFurtherSelection: boolean;
-  childNodes: LanguageTreeNode[];
+  childNodes: OptionNode[]; // In a language node, this will have all the relevant scripts as nodes
 };
 
-export type CustomLangTagDetails = {
+// TODO optional vs undefined
+export type CustomizableLanguageDetails = {
   displayName?: string;
-  scriptOverride?: string;
+  scriptOverride?: ScriptData;
   region?: string;
-  unlistedLanguageName?: string; // combine with dialect?
   dialect?: string;
-  // TODO
-  // 4.  Variant subtags MUST be registered with IANA according to the
-  // rules in Section 3.5 of this document before being used to form
-  // language tags.  In order to distinguish variants from other types
-  // of subtags, registrations MUST meet the following length and
-  // content restrictions:
-
-  // 1.  Variant subtags that begin with a letter (a-z, A-Z) MUST be
-  //     at least five characters long.
 };
 
-interface LanguagePickerState {
-  languageDataTree: LanguageTreeNode[];
-  selectedLanguageNode: LanguageTreeNode | undefined;
-  selectedScriptNode: LanguageTreeNode | undefined;
-  // status: Status;
-  languageDisplayName: string;
-  customLangTagDetails: CustomLangTagDetails;
-  // currentlyProcessingTimeoutId: number | undefined;
-}
+export const UNLISTED_LANGUAGE_NODE_ID = "unlisted-language";
+const UNLISTED_LANGUAGE_NODE = {
+  nodeData: {
+    code: "qaa",
+    autonym: undefined,
+    exonym: "Unknown Lanuage",
+    regionNames: "",
+    regionCodes: [],
+    scripts: [],
+    alternativeTags: [],
+    names: "",
+  } as LanguageData,
+  id: UNLISTED_LANGUAGE_NODE_ID,
+  nodeType: NodeType.Language,
+  childNodes: [],
+} as OptionNode;
+const SCRIPT_OVERRIDE_NODE_ID = "script-override";
 
-// TODO get rid of all the tree and node language?
-
-function readyToSubmit(state: LanguagePickerState) {
-  // There shouldn't be a selectedScriptNode without a selectedLanguageNode anyway...
-  return !!state.selectedLanguageNode && !!state.selectedScriptNode;
-}
-
-export const useLanguagePicker = (
-  modifySearchResults?: (
-    results: FuseResult<LanguageData>[],
-    searchString: string
-  ) => LanguageData[]
-) => {
-  const [state, setState] = useState({
-    languageDataTree: [] as LanguageTreeNode[],
-    selectedLanguageNode: undefined,
-    selectedScriptNode: undefined,
-    languageDisplayName: "",
-    // status: Status.Ready,
-    // currentlyProcessingTimeoutId: undefined as number | undefined, // TODO what is the default number?
-  } as LanguagePickerState);
-
-  const onSearchStringChange = (searchString: string) => {
-    // if (state.currentlyProcessingTimeoutId) {
-    //   clearTimeout(state.currentlyProcessingTimeoutId);
-    // }
-    setState({
-      ...state,
-      languageDataTree: [],
-      selectedLanguageNode: undefined,
-      selectedScriptNode: undefined,
-      languageDisplayName: "",
-    } as LanguagePickerState);
-    // setTimeout(() => {
-    if (searchString.length > 1) {
-      // the query for one character is slow and probably not useful
-      doSearchAndUpdate(searchString, modifySearchResults);
-    }
-    // });
-  };
-
-  const saveCustomLangTagDetails = (details: CustomLangTagDetails) => {
-    for (const scriptNode of state.selectedLanguageNode?.childNodes || []) {
-      if (scriptNode.id === details.scriptOverride) {
-        selectNode(scriptNode);
-        details["scriptOverride"] = undefined;
-        break;
-      }
-    }
-    // TODO deal with presence/absence of fields
-    const updatedDetails = { ...state.customLangTagDetails, ...details };
-    setState({
-      ...state,
-      customLangTagDetails: updatedDetails,
-    });
-  };
-
-  // TODO is this still used?
-  const unSelectAll = () => {
-    console.log("unselecting all");
-    setState({
-      ...state,
-      selectedLanguageNode: undefined,
-      selectedScriptNode: undefined,
-      // status: Status.Ready,
-      languageDisplayName: "",
-      customLangTagDetails: {},
-    });
-  };
-
-  async function doSearchAndUpdate(
-    searchString: string,
-    modifySearchResults?: (
-      results: FuseResult<LanguageData>[],
-      searchString: string
-    ) => LanguageData[]
-  ) {
-    const searchResults = searchForLanguage(searchString);
-    let languageList: LanguageData[];
-    if (modifySearchResults) {
-      languageList = modifySearchResults(searchResults, searchString);
-    } else {
-      languageList = stripResultMetadata(searchResults);
-    }
-    const languageDataTree = languageList.map((language) => {
-      const languageNode: LanguageTreeNode = {
-        nodeData: language,
-        id: language.code,
-        nodeGeneology: [language.code],
-        nodeType: NodeType.Language,
-        requiresFurtherSelection: language.scripts.length > 1,
-        childNodes: [],
-      };
-
-      const scriptNodes = language.scripts.map((script) => {
-        return {
-          nodeData: script,
-          id: script.code,
-          nodeGeneology: [language.code, script.code],
-          nodeType: NodeType.Script,
-          requiresFurtherSelection: false,
-          childNodes: [],
-        } as LanguageTreeNode;
-      });
-      languageNode.childNodes = scriptNodes;
-      return languageNode;
-    });
-    setState({
-      ...state,
-      languageDataTree,
-      selectedLanguageNode: undefined,
-      selectedScriptNode: undefined,
-      languageDisplayName: "",
-      // status: Status.Ready,
-      //   currentlyProcessingTimeoutId: undefined,
-    } as LanguagePickerState);
-  }
-
-  const toggleSelectNode = (node: LanguageTreeNode) => {
-    if (!node) {
-      console.error("no node selected");
-      return;
-    } else if (node.id === state.selectedLanguageNode?.id) {
-      // Clicking on the selected language node unselects it and thus everything
-      unSelectAll();
-      return;
-    } else if (node.id === state.selectedScriptNode?.id) {
-      // clicking on the selected script node unselects it
-      setState({
-        ...state,
-        selectedScriptNode: undefined,
-      });
-      return;
-    } else if (node.nodeType === NodeType.Language) {
-      setState({
-        ...state,
-        selectedLanguageNode: node,
-        selectedScriptNode:
-          node.childNodes.length == 1 ? node.childNodes[0] : undefined,
-        languageDisplayName: stripDemarcation(
-          node.nodeData?.autonym || node.nodeData?.exonym || ""
-        ),
-      });
-    } else if (node.nodeType === NodeType.Script) {
-      setState({
-        ...state,
-        selectedScriptNode: node,
-      });
-    }
-  };
-
-  const changeLanguageDisplayName = (displayName: string) => {
-    setState({
-      ...state,
-      languageDisplayName: displayName,
-    });
-  };
-  return {
-    languageDataTree: state.languageDataTree,
-    selectedLanguageNode: state.selectedLanguageNode,
-    selectedScriptNode: state.selectedScriptNode,
-    languageDisplayName: state.languageDisplayName,
-    currentTag: createTag(
-      state.selectedLanguageNode?.id || "",
-      state.selectedScriptNode?.id,
-      state.customLangTagDetails?.region, // TODO code vs name
-      state.customLangTagDetails?.dialect
-    ),
-    readyToSubmit: readyToSubmit(state),
-    onSearchStringChange,
-    toggleSelectNode: toggleSelectNode,
-    changeLanguageDisplayName,
-    unSelectAll,
-    customLangTagDetails: state.customLangTagDetails,
-    saveCustomLangTagDetails, // TODO this is dangerous in potential combinations with other state changes
-  };
-};
-
-// TODO put this somewhere else
+// TODO put this somewhere else?
 export function createTag(
-  languageCode: string,
+  languageCode?: string,
   scriptCode?: string,
   regionCode?: string,
-  dialect?: string
+  dialectCode?: string
 ) {
+  if (!languageCode) {
+    // Unlisted language
+    return `qaa-x-${dialectCode}`;
+  }
+
+  // TODO watch out for null script override case
   let tag = languageCode;
   if (scriptCode) {
     tag += `-${scriptCode}`;
@@ -243,8 +65,171 @@ export function createTag(
   if (regionCode) {
     tag += `-${regionCode}`;
   }
-  if (dialect) {
-    tag += `-${dialect}`;
+  if (dialectCode) {
+    tag += `-${dialectCode}`;
   }
   return stripDemarcation(tag);
 }
+
+export const useLanguagePicker = (
+  searchResultModifier?: (
+    results: FuseResult<LanguageData>[],
+    searchString: string
+  ) => LanguageData[]
+) => {
+  const [languageDataTree, setLanguageDataTree] = useState([] as OptionNode[]);
+  const [selectedLanguageNode, setSelectedLanguageNode] = useState<
+    OptionNode | undefined
+  >();
+  const [selectedScriptNode, setSelectedScriptNode] = useState<
+    OptionNode | undefined
+  >();
+  const [CustomizableLanguageDetails, setCustomizableLanguageDetails] =
+    useState<CustomizableLanguageDetails>({});
+
+  const isReadyToSubmit =
+    !!selectedLanguageNode &&
+    (!!selectedScriptNode || selectedLanguageNode.childNodes?.length === 0);
+  // TODO  selecting langs with no scripts
+  // TODO rename childNodes to scripts?
+
+  const onSearchStringChange = (searchString: string) => {
+    setLanguageDataTree([]);
+    setSelectedLanguageNode(undefined);
+    setSelectedScriptNode(undefined);
+    setCustomizableLanguageDetails({});
+    if (searchString.length > 1) {
+      // the query for one character is slow and probably not useful
+      doSearchAndUpdate(searchString, searchResultModifier);
+    }
+  };
+
+  // details should only include the properties it wants to modify
+  // TODO test behavior with undefineds
+  const saveCustomizableLanguageDetails = (
+    details: CustomizableLanguageDetails
+  ) => {
+    // first check if the script override really is an override
+    if (details.scriptOverride) {
+      for (const scriptNode of selectedLanguageNode?.childNodes || []) {
+        if (
+          stripDemarcation(scriptNode.id) ===
+          stripDemarcation(details.scriptOverride?.code || "")
+        ) {
+          // This script is a normal script choice for this language.
+          // Select the script card instead of treating it as an override.
+          setSelectedScriptNode(scriptNode);
+          details.scriptOverride = undefined;
+          break;
+        }
+      }
+    }
+    // If there really is a script override (we didn't clear it in the last block)
+    if (details.scriptOverride) {
+      setSelectedScriptNode({
+        nodeData: details.scriptOverride,
+        id: SCRIPT_OVERRIDE_NODE_ID,
+        nodeType: NodeType.Script,
+        childNodes: [],
+      });
+    }
+    const updatedDetails = { ...CustomizableLanguageDetails, ...details };
+    setCustomizableLanguageDetails(updatedDetails);
+  };
+
+  // TODO should this still be async?
+  async function doSearchAndUpdate(
+    searchString: string,
+    searchResultModifier?: (
+      results: FuseResult<LanguageData>[],
+      searchString: string
+    ) => LanguageData[]
+  ) {
+    const searchResults = searchForLanguage(searchString);
+    let languageList: LanguageData[];
+    if (searchResultModifier) {
+      languageList = searchResultModifier(searchResults, searchString);
+    } else {
+      // fuse leaves some metadata in the results which search result modifiers might use
+      languageList = stripResultMetadata(searchResults);
+    }
+    const languageDataTree = languageList.map((language) => {
+      const languageNode: OptionNode = {
+        nodeData: language,
+        id: stripDemarcation(language.code),
+        // TODO we should not be calling stripDemarcation again on ids
+        nodeType: NodeType.Language,
+        childNodes: [],
+      };
+
+      const scriptNodes = language.scripts.map((script) => {
+        return {
+          nodeData: script,
+          id: script.code,
+          nodeType: NodeType.Script,
+          childNodes: [],
+        } as OptionNode;
+      });
+
+      languageNode.childNodes = scriptNodes;
+      return languageNode;
+    });
+
+    setLanguageDataTree(languageDataTree);
+    setSelectedLanguageNode(undefined);
+    setSelectedScriptNode(undefined);
+    setCustomizableLanguageDetails({});
+  }
+
+  const toggleSelectNode = (node: OptionNode) => {
+    if (!node) {
+      console.error("no node selected");
+      return;
+    } else if (node.nodeType === NodeType.Language) {
+      if (node.id === selectedLanguageNode?.id) {
+        // Clicking on the selected language node unselects it and clears data specific to that language
+        setSelectedLanguageNode(undefined);
+        setSelectedScriptNode(undefined);
+        setCustomizableLanguageDetails({});
+        return;
+      } else {
+        setSelectedLanguageNode(node);
+        setSelectedScriptNode(
+          node.childNodes.length == 1 ? node.childNodes[0] : undefined
+        );
+        setCustomizableLanguageDetails({
+          displayName: stripDemarcation(
+            node.nodeData?.autonym || node.nodeData?.exonym || ""
+          ),
+        } as CustomizableLanguageDetails);
+        return;
+      }
+    } else if (node.nodeType === NodeType.Script) {
+      if (node.id === selectedScriptNode?.id) {
+        // clicking on the selected script node unselects it
+        setSelectedScriptNode(undefined);
+        return;
+      } else if (node.nodeType === NodeType.Script) {
+        setSelectedScriptNode(node);
+      }
+    }
+  };
+
+  const selectUnlistedLanguage = () => {
+    setSelectedLanguageNode(UNLISTED_LANGUAGE_NODE);
+    setSelectedScriptNode(undefined);
+    setCustomizableLanguageDetails({});
+  };
+
+  return {
+    languageDataTree,
+    selectedLanguageNode,
+    selectedScriptNode,
+    CustomizableLanguageDetails,
+    onSearchStringChange,
+    toggleSelectNode,
+    isReadyToSubmit,
+    saveCustomizableLanguageDetails,
+    selectUnlistedLanguage,
+  };
+};

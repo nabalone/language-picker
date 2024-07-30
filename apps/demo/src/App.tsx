@@ -22,37 +22,45 @@ import SearchIcon from "@mui/icons-material/Search";
 import { ScriptCard } from "./ScriptCard";
 import { COLORS } from "./Colors";
 import {
-  LanguageTreeNode,
+  OptionNode,
   NodeType,
-  Status,
+  createTag,
   useLanguagePicker,
+  UNLISTED_LANGUAGE_NODE_ID,
 } from "./useLanguagePicker";
 import { debounce } from "lodash";
 import "./styles.css";
-import { bloomModifySearchResults } from "./modifySearchResults";
+import { bloomSearchResultModifier } from "./searchResultModifiers";
 import { CustomizeLanguageButton } from "./CustomizeLanguageButton";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { CustomizeLanguageDialog } from "./CustomizeLanguageDialog";
 import LazyLoad from "react-lazyload";
 
+// TODO switch to class instead of hook
 function App() {
   const {
     languageDataTree,
     selectedLanguageNode,
     selectedScriptNode,
-    languageDisplayName,
-    currentTag,
-    readyToSubmit,
+    CustomizableLanguageDetails,
     onSearchStringChange,
     toggleSelectNode,
-    changeLanguageDisplayName,
-    unSelectAll,
-    saveCustomLangTagDetails,
-  } = useLanguagePicker(bloomModifySearchResults);
+    isReadyToSubmit,
+    saveCustomizableLanguageDetails,
+    selectUnlistedLanguage,
+  } = useLanguagePicker(bloomSearchResultModifier);
   // languageDataTree is a list of the top level nodes. There is no root node
 
   const [customizeLanguageDialogOpen, setCustomizeLanguageDialogOpen] =
     useState(false);
+  const [searchString, setSearchString] = useState("");
+
+  const currentTagPreview = createTag(
+    selectedLanguageNode?.nodeData?.code,
+    selectedScriptNode?.nodeData?.code,
+    CustomizableLanguageDetails?.region, // TODO code vs name
+    selectedLanguageNode ? CustomizableLanguageDetails?.dialect : searchString
+  );
 
   const theme = createTheme({
     palette: {
@@ -162,6 +170,7 @@ function App() {
                 fullWidth
                 onChange={(e) => {
                   debounce(async () => {
+                    setSearchString(e.target.value);
                     onSearchStringChange(e.target.value);
                   }, 0)();
                 }}
@@ -215,10 +224,6 @@ function App() {
                             }
                             colorWhenNotSelected={COLORS.white}
                             colorWhenSelected={COLORS.blues[0]}
-                            // TODO
-                            // onClickAway={() => {
-                            // if (isSelectedNode(languageNode)) unSelectAll();
-                            // }}
                           ></LanguageCard>
                         </CardActionArea>
                         {languageNode.id === selectedLanguageNode?.id &&
@@ -235,7 +240,7 @@ function App() {
                               `}
                             >
                               {languageNode.childNodes.map(
-                                (scriptNode: LanguageTreeNode) => {
+                                (scriptNode: OptionNode) => {
                                   if (scriptNode.nodeType !== NodeType.Script) {
                                     // this shouldn't happen
                                     console.error(
@@ -271,11 +276,6 @@ function App() {
                                           }
                                           colorWhenNotSelected={COLORS.white}
                                           colorWhenSelected={COLORS.blues[1]}
-                                          // TODO
-                                          // onClickAway={() => {
-                                          //   if (isSelectedNode(languageNode))
-                                          //     unSelectAll();
-                                          // }}
                                         />
                                       </CardActionArea>
                                     </ListItem>
@@ -297,8 +297,11 @@ function App() {
                 onClick={() => setCustomizeLanguageDialogOpen(true)}
               >
                 <CustomizeLanguageButton
-                  selectedLanguageNode={selectedLanguageNode}
-                  selectedScriptNode={selectedScriptNode}
+                  currentTagPreview={currentTagPreview}
+                  languageHasBeenSelected={
+                    selectedLanguageNode !== undefined &&
+                    selectedLanguageNode.id !== UNLISTED_LANGUAGE_NODE_ID
+                  }
                   css={css`
                     min-width: 300px;
                   `}
@@ -344,9 +347,11 @@ function App() {
                   `}
                   id="language-name-bar"
                   fullWidth
-                  value={languageDisplayName}
+                  value={CustomizableLanguageDetails.displayName}
                   onChange={(e) => {
-                    changeLanguageDisplayName(e.target.value);
+                    saveCustomizableLanguageDetails({
+                      displayName: e.target.value,
+                    });
                   }}
                 />
               </div>
@@ -356,7 +361,7 @@ function App() {
                   font-family: "Roboto Mono", monospace;
                 `}
               >
-                {currentTag}
+                {selectedLanguageNode !== undefined && currentTagPreview}
               </Typography>
               <div
                 id="buttons-container"
@@ -376,7 +381,7 @@ function App() {
                   `}
                   variant="contained"
                   color="primary"
-                  disabled={!readyToSubmit}
+                  disabled={!isReadyToSubmit}
                 >
                   OK
                 </Button>
@@ -397,13 +402,13 @@ function App() {
 
       <CustomizeLanguageDialog
         open={customizeLanguageDialogOpen}
-        selectedLanguageNodeData={
-          selectedLanguageNode?.nodeData as LanguageData
-        }
-        selectedScriptNodeData={selectedScriptNode?.nodeData as ScriptData}
-        searchString={"TODO"}
+        selectedLanguageNodeData={selectedLanguageNode}
+        selectedScriptNodeData={selectedScriptNode}
+        customizableLanguageDetails={CustomizableLanguageDetails}
+        saveCustomizableLanguageDetails={saveCustomizableLanguageDetails}
+        selectUnlistedLanguage={selectUnlistedLanguage}
+        searchString={searchString}
         onClose={() => setCustomizeLanguageDialogOpen(false)}
-        saveCustomLangTagDetails={saveCustomLangTagDetails}
       />
     </ThemeProvider>
   );

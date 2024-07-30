@@ -3,24 +3,13 @@ import { css } from "@emotion/react";
 import { Button, Tooltip, Typography } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
-import { Button as BaseButton, buttonClasses } from "@mui/base/Button";
 import { COLORS } from "./Colors";
-import { stripDemarcation } from "./modifySearchResults";
-import { LanguageTreeNode } from "./useLanguagePicker";
 
 // TODO fix memo
 export const CustomizeLanguageButton: React.FunctionComponent<{
-  selectedLanguageNode: LanguageTreeNode | undefined;
-  selectedScriptNode: LanguageTreeNode | undefined;
+  currentTagPreview: string;
+  languageHasBeenSelected: boolean;
 }> = (props) => {
-  let tagPreview = "";
-  if (props.selectedLanguageNode) {
-    tagPreview = stripDemarcation(
-      `${props.selectedLanguageNode.id}-${props.selectedScriptNode?.id || "__"}`
-    );
-  } else {
-    tagPreview = "qaa-X-____"; // TODO actually this should be the start of the search string
-  }
   return (
     <Button
       variant="outlined"
@@ -48,7 +37,7 @@ export const CustomizeLanguageButton: React.FunctionComponent<{
           display: flex; // for the icon
         `}
       >
-        {props.selectedLanguageNode && (
+        {props.languageHasBeenSelected && (
           <EditIcon
             css={css`
               margin-right: 5px;
@@ -56,7 +45,9 @@ export const CustomizeLanguageButton: React.FunctionComponent<{
           />
         )}
         {/* TODO align button */}
-        {props.selectedLanguageNode ? "Customize" : "Create Unlisted Language"}
+        {props.languageHasBeenSelected
+          ? "Customize"
+          : "Create Unlisted Language"}
         {/* {props.languageCardData?.name} */}
       </Typography>
       <div
@@ -74,7 +65,7 @@ export const CustomizeLanguageButton: React.FunctionComponent<{
             // justify-content: flex-start;
           `}
         >
-          {tagPreview}
+          {props.currentTagPreview}
         </Typography>
         <Tooltip title="TODO info text...">
           <InfoOutlinedIcon

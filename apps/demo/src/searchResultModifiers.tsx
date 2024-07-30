@@ -64,7 +64,7 @@ const SCRIPT_CODES_TO_EXCLUDE = new Set([
 const scriptFilter = (script: ScriptData) =>
   !SCRIPT_CODES_TO_EXCLUDE.has(script.code);
 
-export function bloomModifySearchResults(
+export function bloomSearchResultModifier(
   results: FuseResult<LanguageData>[],
   searchString: string
 ): LanguageData[] {
@@ -106,6 +106,8 @@ function simplifyEnglishResult(
           regionCodes: [],
           names: "",
           scripts: [latinScriptData],
+          variants: "",
+          alternativeTags: [],
         } as LanguageData)
       : result
   );
@@ -126,6 +128,8 @@ function simplifyFrenchResult(
           regionCodes: [],
           names: "",
           scripts: [latinScriptData],
+          variants: "",
+          alternativeTags: [],
         } as LanguageData)
       : result
   );
