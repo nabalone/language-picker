@@ -9,7 +9,7 @@ import { COLORS } from "./Colors";
 export const CustomizeLanguageButton: React.FunctionComponent<{
   currentTagPreview: string;
   showAsUnlistedLanguage: boolean;
-}> = (props) => {
+}> = ({ currentTagPreview, showAsUnlistedLanguage, ...props }) => {
   return (
     <Button
       variant="outlined"
@@ -37,7 +37,7 @@ export const CustomizeLanguageButton: React.FunctionComponent<{
           display: flex; // for the icon
         `}
       >
-        {props.showAsUnlistedLanguage && (
+        {showAsUnlistedLanguage && (
           <EditIcon
             css={css`
               margin-right: 5px;
@@ -45,10 +45,7 @@ export const CustomizeLanguageButton: React.FunctionComponent<{
           />
         )}
         {/* TODO align button */}
-        {props.showAsUnlistedLanguage
-          ? "Customize"
-          : "Create Unlisted Language"}
-        {/* {props.languageCardData?.name} */}
+        {showAsUnlistedLanguage ? "Customize" : "Create Unlisted Language"}
       </Typography>
       <div
         id="custom-language-card-bottom"
@@ -65,7 +62,7 @@ export const CustomizeLanguageButton: React.FunctionComponent<{
             // justify-content: flex-start;
           `}
         >
-          {props.currentTagPreview}
+          {currentTagPreview}
         </Typography>
         <Tooltip title="TODO info text...">
           <InfoOutlinedIcon

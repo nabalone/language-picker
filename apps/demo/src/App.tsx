@@ -290,23 +290,18 @@ function App() {
                   );
                 })}
               </List>
-              <CardActionArea
+              <CustomizeLanguageButton
+                currentTagPreview={currentTagPreview}
+                showAsUnlistedLanguage={showUnlistedLanguageControls(
+                  selectedLanguageNode
+                )}
                 css={css`
+                  min-width: 300px;
                   width: fit-content;
                   margin-top: 20px;
                 `}
                 onClick={() => setCustomizeLanguageDialogOpen(true)}
-              >
-                <CustomizeLanguageButton
-                  currentTagPreview={currentTagPreview}
-                  showAsUnlistedLanguage={showUnlistedLanguageControls(
-                    selectedLanguageNode
-                  )}
-                  css={css`
-                    min-width: 300px;
-                  `}
-                ></CustomizeLanguageButton>
-              </CardActionArea>
+              ></CustomizeLanguageButton>
             </div>
             <div
               id="right-pane"

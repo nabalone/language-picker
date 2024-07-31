@@ -92,13 +92,23 @@ export const useLanguagePicker = (
   const [selectedScriptNode, setSelectedScriptNode] = useState<
     OptionNode | undefined
   >();
+
+  // So we don't flip things between controlled and uncontrolled inputs
+  const EMPTY_CUSTOMIZABLE_LANGUAGE_DETAILS = {
+    displayName: "",
+    scriptOverride: undefined,
+    region: "",
+    dialect: "",
+  };
+
   const [CustomizableLanguageDetails, setCustomizableLanguageDetails] =
-    useState<CustomizableLanguageDetails>({
-      displayName: "",
-      scriptOverride: undefined,
-      region: "",
-      dialect: "",
-    });
+    useState<CustomizableLanguageDetails>(EMPTY_CUSTOMIZABLE_LANGUAGE_DETAILS);
+
+  EMPTY_CUSTOMIZABLE_LANGUAGE_DETAILS;
+
+  const clearCustomizableLanguageDetails = () => {
+    setCustomizableLanguageDetails(EMPTY_CUSTOMIZABLE_LANGUAGE_DETAILS);
+  };
 
   const isReadyToSubmit =
     !!selectedLanguageNode &&
@@ -110,7 +120,7 @@ export const useLanguagePicker = (
     setLanguageDataTree([]);
     setSelectedLanguageNode(undefined);
     setSelectedScriptNode(undefined);
-    setCustomizableLanguageDetails({});
+    clearCustomizableLanguageDetails();
     if (searchString.length > 1) {
       // the query for one character is slow and probably not useful
       doSearchAndUpdate(searchString, searchResultModifier);
@@ -191,7 +201,7 @@ export const useLanguagePicker = (
     setLanguageDataTree(languageDataTree);
     setSelectedLanguageNode(undefined);
     setSelectedScriptNode(undefined);
-    setCustomizableLanguageDetails({});
+    clearCustomizableLanguageDetails();
   }
 
   const toggleSelectNode = (node: OptionNode) => {
@@ -203,7 +213,7 @@ export const useLanguagePicker = (
         // Clicking on the selected language node unselects it and clears data specific to that language
         setSelectedLanguageNode(undefined);
         setSelectedScriptNode(undefined);
-        setCustomizableLanguageDetails({});
+        clearCustomizableLanguageDetails();
         return;
       } else {
         setSelectedLanguageNode(node);
@@ -231,7 +241,7 @@ export const useLanguagePicker = (
   const selectUnlistedLanguage = () => {
     setSelectedLanguageNode(UNLISTED_LANGUAGE_NODE);
     setSelectedScriptNode(undefined);
-    setCustomizableLanguageDetails({});
+    clearCustomizableLanguageDetails();
   };
 
   return {
