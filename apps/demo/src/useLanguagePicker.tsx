@@ -85,7 +85,7 @@ export const useLanguagePicker = (
     searchString: string
   ) => LanguageData[]
 ) => {
-  const [languageDataTree, setLanguageDataTree] = useState([] as OptionNode[]);
+  const [languageData, setlanguageData] = useState([] as OptionNode[]);
   const [selectedLanguageNode, setSelectedLanguageNode] = useState<
     OptionNode | undefined
   >();
@@ -117,7 +117,7 @@ export const useLanguagePicker = (
   // TODO rename childNodes to scripts?
 
   const onSearchStringChange = (searchString: string) => {
-    setLanguageDataTree([]);
+    setlanguageData([]);
     setSelectedLanguageNode(undefined);
     setSelectedScriptNode(undefined);
     clearCustomizableLanguageDetails();
@@ -169,14 +169,14 @@ export const useLanguagePicker = (
     ) => LanguageData[]
   ) {
     const searchResults = searchForLanguage(searchString);
-    let languageList: LanguageData[];
+    let modifiedSearchResults: LanguageData[];
     if (searchResultModifier) {
-      languageList = searchResultModifier(searchResults, searchString);
+      modifiedSearchResults = searchResultModifier(searchResults, searchString);
     } else {
       // fuse leaves some metadata in the results which search result modifiers might use
-      languageList = stripResultMetadata(searchResults);
+      modifiedSearchResults = stripResultMetadata(searchResults);
     }
-    const languageDataTree = languageList.map((language) => {
+    const languageData = modifiedSearchResults.map((language) => {
       const languageNode: OptionNode = {
         nodeData: language,
         id: stripDemarcation(language.code),
@@ -198,7 +198,7 @@ export const useLanguagePicker = (
       return languageNode;
     });
 
-    setLanguageDataTree(languageDataTree);
+    setlanguageData(languageData);
     setSelectedLanguageNode(undefined);
     setSelectedScriptNode(undefined);
     clearCustomizableLanguageDetails();
@@ -245,7 +245,7 @@ export const useLanguagePicker = (
   };
 
   return {
-    languageDataTree,
+    languageData,
     selectedLanguageNode,
     selectedScriptNode,
     CustomizableLanguageDetails,

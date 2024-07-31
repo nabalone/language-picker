@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-// todo eslint
 /** @jsxImportSource @emotion/react */
 import { css } from "@emotion/react";
 import { LanguageData, ScriptData } from "@languagepicker/ethnolib";
@@ -26,7 +24,6 @@ import {
   NodeType,
   createTag,
   useLanguagePicker,
-  UNLISTED_LANGUAGE_NODE_ID,
   showUnlistedLanguageControls,
 } from "./useLanguagePicker";
 import { debounce } from "lodash";
@@ -37,10 +34,9 @@ import { useState } from "react";
 import { CustomizeLanguageDialog } from "./CustomizeLanguageDialog";
 import LazyLoad from "react-lazyload";
 
-// TODO switch to class instead of hook
 function App() {
   const {
-    languageDataTree,
+    languageData,
     selectedLanguageNode,
     selectedScriptNode,
     CustomizableLanguageDetails,
@@ -50,7 +46,6 @@ function App() {
     saveCustomizableLanguageDetails,
     selectUnlistedLanguage,
   } = useLanguagePicker(bloomSearchResultModifier);
-  // languageDataTree is a list of the top level nodes. There is no root node
 
   const [customizeLanguageDialogOpen, setCustomizeLanguageDialogOpen] =
     useState(false);
@@ -184,7 +179,7 @@ function App() {
                   flex-grow: 1;
                 `}
               >
-                {languageDataTree.map((languageNode) => {
+                {languageData.map((languageNode) => {
                   if (languageNode.nodeType !== NodeType.Language) {
                     console.error(
                       "unexpected node is not language node: ",
