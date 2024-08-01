@@ -1,6 +1,7 @@
 import {
   LanguageData,
   ScriptData,
+  Region,
   searchForLanguage,
 } from "@languagepicker/ethnolib";
 import { useState } from "react";
@@ -23,7 +24,7 @@ export type OptionNode = {
 export type CustomizableLanguageDetails = {
   displayName?: string;
   scriptOverride?: ScriptData;
-  region?: string;
+  region?: Region;
   dialect?: string;
 };
 
@@ -33,8 +34,7 @@ const UNLISTED_LANGUAGE_NODE = {
     code: "qaa",
     autonym: undefined,
     exonym: "Unknown Lanuage",
-    regionNames: "",
-    regionCodes: [],
+    regions: [],
     scripts: [],
     alternativeTags: [],
     names: "",

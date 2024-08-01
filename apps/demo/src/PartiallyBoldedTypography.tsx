@@ -1,5 +1,8 @@
 import { Typography } from "@mui/material";
-import { START_OF_MATCH, END_OF_MATCH } from "./searchResultModifiers";
+import {
+  START_OF_MATCH_MARKER,
+  END_OF_MATCH_MARKER,
+} from "./searchResultModifiers";
 import React from "react";
 
 export const PartiallyBoldedTypography: React.FunctionComponent<{
@@ -13,8 +16,8 @@ export const PartiallyBoldedTypography: React.FunctionComponent<{
     );
   }
   const htmlString = (dangerouslySetDemarcatedText ?? "")
-    .replaceAll(START_OF_MATCH, "<span style='font-weight: bold;'>") // needs ES2021
-    .replaceAll(END_OF_MATCH, "</span>");
+    .replaceAll(START_OF_MATCH_MARKER, "<span style='font-weight: bold;'>") // needs ES2021
+    .replaceAll(END_OF_MATCH_MARKER, "</span>");
 
   return (
     <Typography

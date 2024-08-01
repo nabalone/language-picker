@@ -54,7 +54,7 @@ function App() {
   const currentTagPreview = createTag(
     selectedLanguageNode?.nodeData?.code,
     selectedScriptNode?.nodeData?.code,
-    CustomizableLanguageDetails?.region, // TODO code vs name
+    CustomizableLanguageDetails?.region?.code,
     selectedLanguageNode ? CustomizableLanguageDetails?.dialect : searchString
   );
 
@@ -162,7 +162,6 @@ function App() {
                   </InputAdornment>
                 }
                 id="search-bar"
-                // size="small"
                 fullWidth
                 onChange={(e) => {
                   debounce(async () => {
@@ -171,7 +170,8 @@ function App() {
                   }, 0)();
                 }}
               />
-              <List
+              <div
+                id="language-card-list"
                 css={css`
                   overflow-y: auto;
                   scrollbar-width: thick;
@@ -179,7 +179,7 @@ function App() {
                   flex-grow: 1;
                 `}
               >
-                {languageData.map((languageNode) => {
+                {languageData.map((languageNode, index) => {
                   if (languageNode.nodeType !== NodeType.Language) {
                     console.error(
                       "unexpected node is not language node: ",
@@ -191,100 +191,92 @@ function App() {
                     <LazyLoad
                       height={"125px"} // the min height we set on the language card
                       overflow={true}
+                      key={index} // TODO this should be languageNode.id, but that breaks the lazyload for some reason! (try searching "uzb")
                     >
-                      <ListItem
+                      <CardActionArea
+                        onClick={() => toggleSelectNode(languageNode)}
                         css={css`
-                          margin-left: 0;
-                          padding-left: 0;
-                          flex-direction: column;
+                          margin: 10px 0px;
                         `}
-                        key={languageNode.id}
                       >
-                        {/* // TODO remove this */}
-                        <CardActionArea
-                          onClick={() => toggleSelectNode(languageNode)}
-                          // css={css`
-                          //   width: 100%;
-                          // `}
-                        >
-                          <LanguageCard
+                        <LanguageCard
+                          css={css`
+                            width: 100%;
+                            min-height: 125px;
+                            flex-direction: column;
+                          `}
+                          languageCardData={
+                            languageNode.nodeData as LanguageData
+                          }
+                          isSelected={
+                            languageNode.id === selectedLanguageNode?.id
+                          }
+                          colorWhenNotSelected={COLORS.white}
+                          colorWhenSelected={COLORS.blues[0]}
+                        ></LanguageCard>
+                      </CardActionArea>
+                      {languageNode.id === selectedLanguageNode?.id &&
+                        languageNode.childNodes.length > 1 && (
+                          <List
                             css={css`
                               width: 100%;
-                              min-height: 125px;
+                              display: flex;
+                              flex-direction: row;
+                              justify-content: flex-end;
+                              flex-wrap: wrap;
+                              // TODO do we want to scroll? Or wrap?
+                              padding-left: 30px;
                             `}
-                            languageCardData={
-                              languageNode.nodeData as LanguageData
-                            }
-                            isSelected={
-                              languageNode.id === selectedLanguageNode?.id
-                            }
-                            colorWhenNotSelected={COLORS.white}
-                            colorWhenSelected={COLORS.blues[0]}
-                          ></LanguageCard>
-                        </CardActionArea>
-                        {languageNode.id === selectedLanguageNode?.id &&
-                          languageNode.childNodes.length > 1 && (
-                            <List
-                              css={css`
-                                width: 100%;
-                                display: flex;
-                                flex-direction: row;
-                                justify-content: flex-end;
-                                flex-wrap: wrap;
-                                // TODO do we want to scroll? Or wrap?
-                                padding-left: 30px;
-                              `}
-                            >
-                              {languageNode.childNodes.map(
-                                (scriptNode: OptionNode) => {
-                                  if (scriptNode.nodeType !== NodeType.Script) {
-                                    // this shouldn't happen
-                                    console.error(
-                                      "unexpected node is not script: ",
-                                      scriptNode.id
-                                    );
-                                    return <></>;
-                                  }
-                                  return (
-                                    <ListItem
-                                      key={scriptNode.id}
-                                      css={css`
-                                        margin-right: 0;
-                                        padding-right: 0;
-                                        width: fit-content;
-                                      `}
-                                    >
-                                      <CardActionArea
-                                        onClick={() =>
-                                          toggleSelectNode(scriptNode)
-                                        }
-                                      >
-                                        <ScriptCard
-                                          css={css`
-                                            min-width: 175px;
-                                          `}
-                                          scriptData={
-                                            scriptNode.nodeData as ScriptData
-                                          }
-                                          isSelected={
-                                            scriptNode.id ===
-                                            selectedScriptNode?.id
-                                          }
-                                          colorWhenNotSelected={COLORS.white}
-                                          colorWhenSelected={COLORS.blues[1]}
-                                        />
-                                      </CardActionArea>
-                                    </ListItem>
+                          >
+                            {languageNode.childNodes.map(
+                              (scriptNode: OptionNode) => {
+                                if (scriptNode.nodeType !== NodeType.Script) {
+                                  // this shouldn't happen
+                                  console.error(
+                                    "unexpected node is not script: ",
+                                    scriptNode.id
                                   );
+                                  return;
                                 }
-                              )}
-                            </List>
-                          )}
-                      </ListItem>
+                                return (
+                                  <ListItem
+                                    key={scriptNode.id}
+                                    css={css`
+                                      margin-right: 0;
+                                      padding-right: 0;
+                                      width: fit-content;
+                                    `}
+                                  >
+                                    <CardActionArea
+                                      onClick={() =>
+                                        toggleSelectNode(scriptNode)
+                                      }
+                                    >
+                                      <ScriptCard
+                                        css={css`
+                                          min-width: 175px;
+                                        `}
+                                        scriptData={
+                                          scriptNode.nodeData as ScriptData
+                                        }
+                                        isSelected={
+                                          scriptNode.id ===
+                                          selectedScriptNode?.id
+                                        }
+                                        colorWhenNotSelected={COLORS.white}
+                                        colorWhenSelected={COLORS.blues[1]}
+                                      />
+                                    </CardActionArea>
+                                  </ListItem>
+                                );
+                              }
+                            )}
+                          </List>
+                        )}
                     </LazyLoad>
                   );
                 })}
-              </List>
+              </div>
               <CustomizeLanguageButton
                 currentTagPreview={currentTagPreview}
                 showAsUnlistedLanguage={showUnlistedLanguageControls(

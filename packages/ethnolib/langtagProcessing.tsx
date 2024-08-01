@@ -1,7 +1,8 @@
 import { iso15924 } from "iso-15924";
 import langTags from "./langtags.json" assert { type: "json" };
 import * as fs from "fs";
-import { LanguageData, ScriptData } from "./dataHolderTypes";
+import { LanguageData, Region, ScriptData } from "./dataHolderTypes";
+import iso3166 from "iso-3166-1";
 
 const COMMA_SEPARATOR = ", ";
 
@@ -9,6 +10,14 @@ const scriptNames = iso15924.reduce(
   (acc, entry) => ({ ...acc, [entry.code]: entry.name }),
   {}
 );
+
+const regionNames = iso3166
+  .all()
+  .reduce((acc, entry) => ({ ...acc, [entry.alpha2]: entry.country }), {});
+
+function getRegionName(code: string) {
+  return regionNames[code];
+}
 
 function getIso639_3CodeDetails() {
   const codeDetails = new Set();
@@ -28,7 +37,7 @@ function getIso639_3CodeDetails() {
 // turn "Uzbek, Northern" into "Northern Uzbek"
 function uncomma(str: string) {
   if (!str) {
-    return ""; // TODO or undefined?
+    return "";
   }
   const parts = str.split(COMMA_SEPARATOR);
   if (parts.length === 1) {
@@ -40,8 +49,7 @@ type InternalLanguageData = {
   autonym: string;
   exonym: string;
   code: string;
-  regionNames: Set<string>;
-  regionCodes: Set<string>;
+  regions: Set<string>; // ISO 3166 codes
   names: Set<string>;
   scripts: Set<string>;
   alternativeTags: Set<string>;
@@ -56,33 +64,15 @@ function findPotentialIso639_3Code(languageTag: string): string | undefined {
 }
 
 function getAllPossibleNames(entry: any) {
-  // TODO clean all this up to use spreads instead
-  const names = new Set(entry.names);
-  if (entry.localname) {
-    names.add(entry.localname);
-  }
-  if (entry.name) {
-    names.add(entry.name);
-  }
-  if (entry.localnames) {
-    for (const name of entry.localnames) {
-      names.add(name);
-    }
-  }
-  if (entry.iana) {
-    for (const name of entry.iana) {
-      names.add(name);
-    }
-  }
-  if (entry.latnnames) {
-    for (const name of entry.latnnames) {
-      names.add(name);
-    }
-  }
-  if (entry.macrolang) {
-    names.add(entry.macrolang);
-  }
-  return names;
+  return new Set([
+    ...(entry.names || []),
+    entry.localname,
+    entry.name,
+    ...(entry.localnames || []),
+    ...(entry.iana || []),
+    ...(entry.latnnames || []),
+    entry.macrolang, // A macrolanguage that contains this language. Include so this language will come up when people search the macrolanguage name
+  ]);
 }
 
 function bestAutonym(entry: any, fallback: string) {
@@ -91,7 +81,6 @@ function bestAutonym(entry: any, fallback: string) {
 
 function addLangtagsEntry(entry, langs) {
   if (!entry.iso639_3) {
-    // console.log("skipping", entry);
     // langTags.json has metadata items in the same list mixed in with the data entries
     return;
   }
@@ -102,12 +91,7 @@ function addLangtagsEntry(entry, langs) {
       entry,
       langs[entry.iso639_3].autonym
     );
-    langs[entry.iso639_3].regionNames.add(entry.regionname);
-    langs[entry.iso639_3].regionCodes.add(entry.region);
-    langs[entry.iso639_3].regionCodes = new Set([
-      ...langs[entry.iso639_3].regionCodes,
-      ...(entry.regions ?? []),
-    ]);
+    langs[entry.iso639_3].regions.add(entry.region);
     langs[entry.iso639_3].scripts.add(entry.script);
     langs[entry.iso639_3].names = new Set([
       ...langs[entry.iso639_3].names,
@@ -131,8 +115,7 @@ function addLangtagsEntry(entry, langs) {
       autonym: bestAutonym(entry, undefined),
       exonym: entry.name,
       code: entry.iso639_3 as string,
-      regionNames: new Set([entry.regionname]),
-      regionCodes,
+      regions: new Set([entry.region]),
       names: getAllPossibleNames(entry),
       scripts: new Set([entry.script]),
       alternativeTags: new Set(entry.tags || []),
@@ -182,22 +165,20 @@ function parseLangtagsJson() {
       langData.names.delete(langData.autonym);
       langData.names.delete(langData.exonym);
       langData.names.forEach(uncomma);
-      langData.regionNames.forEach(uncomma);
       return {
         autonym: uncomma(langData.autonym),
         exonym: uncomma(langData.exonym),
         code: langData.code,
-        regionNames: [
-          // TODO do this better
-          ...new Set([...langData.regionNames].map(uncomma)),
-        ].join(COMMA_SEPARATOR),
+        regions: [...langData.regions].map(
+          (regionCode) =>
+            ({ name: getRegionName(regionCode), code: regionCode } as Region)
+        ),
         scripts: [...new Set([...langData.scripts])].map((scriptCode) => {
           return {
             code: scriptCode,
             name: uncomma(scriptNames[scriptCode]),
           } as ScriptData;
         }),
-        regionCodes: [...langData.regionCodes],
         names: [
           // TODO do this better
           ...new Set([...langData.names].map(uncomma)),
@@ -241,8 +222,7 @@ function parseLangtagsJson() {
     autonym: undefined,
     exonym: "Unknown",
     code: "qaa",
-    regionNames: "",
-    regionCodes: [],
+    regions: [],
     scripts: [latinScriptData],
     names: "",
   } as LanguageData);

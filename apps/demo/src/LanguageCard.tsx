@@ -39,7 +39,7 @@ export const LanguageCard: React.FunctionComponent<LanguageCardProps> = memo(
             variant="body2"
             dangerouslySetDemarcatedText={props.languageCardData.code}
           />
-          {props.languageCardData.regionNames && (
+          {props.languageCardData.regions?.length > 0 && (
             <PartiallyBoldedTypography
               variant="h5"
               gutterBottom
@@ -51,7 +51,9 @@ export const LanguageCard: React.FunctionComponent<LanguageCardProps> = memo(
                 -webkit-box-orient: vertical;
                 overflow: hidden;
               `}
-              dangerouslySetDemarcatedText={`A language of ${props.languageCardData.regionNames}`}
+              dangerouslySetDemarcatedText={`A language of ${props.languageCardData.regions
+                .map((region) => region.name)
+                .join(", ")}`}
             />
           )}
           {props.languageCardData.names && (
@@ -69,21 +71,3 @@ export const LanguageCard: React.FunctionComponent<LanguageCardProps> = memo(
     );
   }
 );
-
-// TODO move all this to the notion
-// chm/mhr/mrj is a good clean example
-// lav/ltg/lvs is same but without the macrolang field
-// kpe - do I include Guinea as a region?
-// aka - macrolang in macrolang list but not in ethnologue...
-
-// TODO langtags.json is not case consistent
-
-// Duplicate macrolangs with "hidden" specific langs into both
-// Try to write up macrolanguage situation.
-// Eventually we should figure out which macrolangs are valid options. We will come back to this.
-// I want to flag the duplicate entries
-// Make a unit test that records e.g. that AKA is avialable as a choice, XPE, etc.
-
-// TODO AAAH "man" (a macrolang) has alternate tags of both "mnk" and "emk" (valid individual languages)
-// als san/cls/vsn but that's ok because it is historical sanskrit
-// Also zap/zcd/zai

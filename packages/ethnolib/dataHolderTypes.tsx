@@ -1,3 +1,10 @@
+// TODO rename this file
+
+export type Region = {
+  name: string;
+  code: string;
+};
+
 export type ScriptData = {
   code: string;
   name: string;
@@ -8,8 +15,7 @@ export type LanguageData = {
   autonym: string | undefined;
   exonym: string;
   code: string; // ISO 639-3
-  regionNames: string; // comma-joined
-  regionCodes: string[];
+  regions: Region[];
   names: string; // comma-joined
   scripts: ScriptData[];
   variants?: string; // comma-joined

@@ -6,7 +6,6 @@ export const EthnolibTextInput: React.FunctionComponent<{
   id: string;
   label: string;
 }> = ({ id, label, ...otherInputProps }) => {
-  console.log("otherInputProps", otherInputProps);
   return (
     <div>
       <label htmlFor={id}>

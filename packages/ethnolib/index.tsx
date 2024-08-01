@@ -7,7 +7,7 @@ const fuseSearchKeys = [
   { name: "exonym", weight: 10 },
   { name: "code", weight: 8 },
   { name: "names", weight: 8 },
-  { name: "regionNames", weight: 1 },
+  { name: "regions", weight: 1 },
 ];
 
 export const fieldsToSearch = fuseSearchKeys.map((key) => key.name);

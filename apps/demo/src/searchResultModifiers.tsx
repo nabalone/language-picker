@@ -7,8 +7,8 @@ import { FuseResult } from "fuse.js";
 
 import { cloneDeep } from "lodash";
 
-export const START_OF_MATCH = "[";
-export const END_OF_MATCH = "]";
+export const START_OF_MATCH_MARKER = "[";
+export const END_OF_MATCH_MARKER = "]";
 
 function demarcateResults(results: FuseResult<LanguageData>[]) {
   const resultsCopy = cloneDeep(results);
@@ -18,9 +18,9 @@ function demarcateResults(results: FuseResult<LanguageData>[]) {
       const newValue = [];
       for (const [matchStart, matchEnd] of match.indices) {
         newValue.push(match.value.slice(lastTrasnferredIndex, matchStart));
-        newValue.push(START_OF_MATCH);
+        newValue.push(START_OF_MATCH_MARKER);
         newValue.push(match.value.slice(matchStart, matchEnd + 1));
-        newValue.push(END_OF_MATCH);
+        newValue.push(END_OF_MATCH_MARKER);
         lastTrasnferredIndex = matchEnd + 1;
       }
       newValue.push(match.value.slice(lastTrasnferredIndex));
@@ -32,7 +32,9 @@ function demarcateResults(results: FuseResult<LanguageData>[]) {
 
 export function stripDemarcation(str: string): string {
   if (!str) return str;
-  return str.replaceAll(START_OF_MATCH, "").replaceAll(END_OF_MATCH, "");
+  return str
+    .replaceAll(START_OF_MATCH_MARKER, "")
+    .replaceAll(END_OF_MATCH_MARKER, "");
 }
 
 export function stripResultMetadata(
@@ -102,8 +104,7 @@ function simplifyEnglishResult(
           autonym: undefined, // because exonym is mandatory and we don't want to repeat it
           exonym: result.exonym, // "English",
           code: "eng",
-          regionNames: "",
-          regionCodes: [],
+          regions: [],
           names: "",
           scripts: [latinScriptData],
           variants: "",
@@ -124,8 +125,7 @@ function simplifyFrenchResult(
           autonym: result.autonym, // this will be "Français", but we want to keep demarcation in case user typed "Francais"
           exonym: result.exonym, // "French"
           code: "fra",
-          regionNames: "",
-          regionCodes: [],
+          regions: [],
           names: "",
           scripts: [latinScriptData],
           variants: "",
@@ -138,8 +138,10 @@ function simplifyFrenchResult(
 // Compare codes, ignoring any demarcation or casing
 function codeMatches(code1: string, code2: string) {
   return (
-    code1.replace(START_OF_MATCH, "").replace(END_OF_MATCH, "") ===
-    code2.replace(START_OF_MATCH, "").replace(END_OF_MATCH, "")
+    code1
+      .replace(START_OF_MATCH_MARKER, "")
+      .replace(END_OF_MATCH_MARKER, "") ===
+    code2.replace(START_OF_MATCH_MARKER, "").replace(END_OF_MATCH_MARKER, "")
   );
 }
 
@@ -234,12 +236,12 @@ function demarcateExactMatches(searchString: string, result: LanguageData) {
     if (indexOfSearchString !== -1) {
       result[field] =
         result[field].slice(0, indexOfSearchString) +
-        START_OF_MATCH +
+        START_OF_MATCH_MARKER +
         result[field].slice(
           indexOfSearchString,
           indexOfSearchString + searchString.length
         ) +
-        END_OF_MATCH +
+        END_OF_MATCH_MARKER +
         result[field].slice(indexOfSearchString + searchString.length);
     }
   }

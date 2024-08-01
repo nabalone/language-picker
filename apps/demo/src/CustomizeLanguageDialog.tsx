@@ -20,14 +20,8 @@ import { EthnolibTextInput } from "./EthnolibTextInput";
 import iso3166 from "iso-3166-1";
 import { iso15924 } from "iso-15924";
 import { COLORS } from "./Colors";
-import { LanguageData, ScriptData } from "@languagepicker/ethnolib";
+import { ScriptData } from "@languagepicker/ethnolib";
 
-// export type Region = {
-//   name: string;
-//   code: string;
-// };
-
-// TODO just download these and use...
 function getAllRegionOptions() {
   return iso3166.all().map((region) => {
     return {
@@ -66,28 +60,33 @@ export const CustomizeLanguageDialog: React.FunctionComponent<{
 
   // Store dialog state. Used to create a tag preview just inside the dialog, before saving anything
   // but these should not persist when the dialog is closed
-  const [dialogSelectedScriptCode, setDialogSelectedScriptCode] =
-    React.useState<{
-      label: string;
-      id: string;
-    }>({ label: "", id: "" }); // Will be set by the useEffect below
-  const [dialogSelectedRegionCode, setDialogSelectedRegionCode] =
-    React.useState<{
-      label: string;
-      id: string;
-    }>({ label: "", id: "" }); // Will be set by the useEffect below
-  const [dialogSelectedDialectCode, setDialogSelectedDialectCode] =
+  const [dialogSelectedScript, setDialogSelectedScriptCode] = React.useState<{
+    label: string;
+    id: string;
+  }>({ label: "", id: "" }); // Will be set by the useEffect below
+  const [dialogSelectedRegion, setDialogSelectedRegionCode] = React.useState<{
+    label: string;
+    id: string;
+  }>({ label: "", id: "" }); // Will be set by the useEffect below
+  const [dialogSelectedDialect, setDialogSelectedDialectCode] =
     React.useState<string>(""); // Will be set by the useEffect below
   React.useEffect(() => {
     setDialogSelectedScriptCode(
       props.selectedScriptNode?.nodeData?.code
         ? {
-            label: "TODO script name",
-            id: props.selectedScriptNode?.nodeData.code,
+            label: props.selectedScriptNode.nodeData.name,
+            id: props.selectedScriptNode.nodeData.code,
           }
         : { label: "", id: "" }
     );
-    setDialogSelectedRegionCode({ label: "", id: "" });
+    setDialogSelectedRegionCode(
+      props.customizableLanguageDetails.region?.code
+        ? {
+            label: props.customizableLanguageDetails.region.name,
+            id: props.customizableLanguageDetails.region.code,
+          }
+        : { label: "", id: "" }
+    );
     setDialogSelectedDialectCode(
       // if the user has not selected any language, not even the unlisted language button, then
       // there will be no language details and we suggest the search string as a
@@ -124,7 +123,7 @@ export const CustomizeLanguageDialog: React.FunctionComponent<{
           <EthnolibTextInput
             id="unlisted-lang-name-field"
             label="Name"
-            value={dialogSelectedDialectCode}
+            value={dialogSelectedDialect}
             onChange={(event) => {
               setDialogSelectedDialectCode(event.target.value);
             }}
@@ -155,7 +154,7 @@ export const CustomizeLanguageDialog: React.FunctionComponent<{
             </Typography>
           </label>
           <Autocomplete
-            value={dialogSelectedScriptCode}
+            value={dialogSelectedScript}
             onChange={(
               event,
               newValue: { label: string; id: string } | null
@@ -182,7 +181,7 @@ export const CustomizeLanguageDialog: React.FunctionComponent<{
             </Typography>
           </label>
           <Autocomplete
-            value={dialogSelectedRegionCode}
+            value={dialogSelectedRegion}
             onChange={(
               event,
               newValue: { label: string; id: string } | null
@@ -209,7 +208,7 @@ export const CustomizeLanguageDialog: React.FunctionComponent<{
           <EthnolibTextInput
             id="customize-variant-field"
             label="Variant (dialect)"
-            value={dialogSelectedDialectCode}
+            value={dialogSelectedDialect}
             onChange={(event) => {
               setDialogSelectedDialectCode(event.target.value);
             }}
@@ -223,9 +222,9 @@ export const CustomizeLanguageDialog: React.FunctionComponent<{
             >
               {createTag(
                 props.selectedLanguageNode?.nodeData?.code,
-                dialogSelectedScriptCode?.id,
-                dialogSelectedRegionCode?.id,
-                dialogSelectedDialectCode
+                dialogSelectedScript?.id,
+                dialogSelectedRegion?.id,
+                dialogSelectedDialect
               )}
             </span>
           </Typography>
@@ -260,11 +259,14 @@ export const CustomizeLanguageDialog: React.FunctionComponent<{
               // save unlisted language
               props.saveCustomizableLanguageDetails({
                 scriptOverride: {
-                  code: dialogSelectedScriptCode?.id,
-                  name: dialogSelectedScriptCode?.label,
+                  code: dialogSelectedScript?.id,
+                  name: dialogSelectedScript?.label,
                 } as ScriptData,
-                region: dialogSelectedRegionCode?.id,
-                dialect: dialogSelectedDialectCode,
+                region: {
+                  code: dialogSelectedRegion?.id,
+                  name: dialogSelectedRegion?.label,
+                } as Region,
+                dialect: dialogSelectedDialect,
               });
               props.onClose();
             }}
