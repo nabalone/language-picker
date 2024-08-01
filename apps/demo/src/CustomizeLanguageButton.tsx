@@ -43,7 +43,7 @@ export const CustomizeLanguageButton: React.FunctionComponent<{
             `}
           />
         )}
-        {showAsUnlistedLanguage ? "Customize" : "Create Unlisted Language"}
+        {showAsUnlistedLanguage ? "Create Unlisted Language" : "Customize"}
       </Typography>
       <div
         id="custom-language-card-bottom"

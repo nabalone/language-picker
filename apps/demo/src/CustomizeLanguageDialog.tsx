@@ -116,8 +116,8 @@ export const CustomizeLanguageDialog: React.FunctionComponent<{
     >
       <DialogTitle>
         {isUnlistedLanguageDialog
-          ? "Custom Language Tag"
-          : "Unlisted Language Tag"}
+          ? "Unlisted Language Tag"
+          : "Custom Language Tag"}
       </DialogTitle>
 
       {isUnlistedLanguageDialog && (
