@@ -3,6 +3,7 @@ import {
   ScriptData,
   fieldsToSearch,
 } from "@languagepicker/ethnolib";
+// TODO ask reviewer about structuring imports from ethnolib index differently
 import { FuseResult } from "fuse.js";
 
 import { cloneDeep } from "lodash";
@@ -177,12 +178,13 @@ const ANCIENT_LANGUAGE_ENTRY_CODES = new Set([
   "sga", // Old Irish
   "goh", // Old High German
   "peo", // Old Persian
-  // TODO there are a bunch more - search for things like (to 1500), (up to 700), BCE, B.C., ca., etc
+  // TODO future work there are a bunch more - search for things like (to 1500), (up to 700), BCE, B.C., ca., etc
+  // Filter for deprecated, historical languages etc.
 ]);
 
 const OTHER_EXCLUDED_LANGUAGE_CODES = new Set([
   "frc", // Francais cadien/Cajun french/Louisiana french, spoken in the U.S.
-  // TODO not sure if this is okay to exclude but seems like it will cause confusion
+  // TODO need to confirm this is okay to exclude, but seems like it will cause confusion otherwise
 ]);
 
 export function filterSpecialEntries(results: LanguageData[]): LanguageData[] {
@@ -221,12 +223,12 @@ function prioritizeLangByKeywords(
   return results;
 }
 
-// TODO turn all the methods into modifiers
+// TODO ask reviewer about modifying vs copying results
 function demarcateExactMatches(searchString: string, result: LanguageData) {
   // I think we'll live with only exact matches for this
   const lowerCasedSearchString = searchString.toLowerCase();
-  // TODO export this list of fields from
   for (const field of fieldsToSearch) {
+    //TODO better to look like ethnolib.fieldsToSearch
     if (!result[field]) {
       continue;
     }

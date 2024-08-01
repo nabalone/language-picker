@@ -34,5 +34,4 @@ export function searchForLanguage(
   return fuse.search(queryString);
 }
 
-// TODO do I need to do it this way?
 export { LanguageData, ScriptData };

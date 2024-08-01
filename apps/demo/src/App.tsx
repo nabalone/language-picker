@@ -224,7 +224,6 @@ function App() {
                               flex-direction: row;
                               justify-content: flex-end;
                               flex-wrap: wrap;
-                              // TODO do we want to scroll? Or wrap?
                               padding-left: 30px;
                             `}
                           >

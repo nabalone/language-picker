@@ -1,7 +1,7 @@
 import { iso15924 } from "iso-15924";
-import langTags from "./langtags.json" assert { type: "json" };
+import langtags from "./langtags.json" assert { type: "json" };
 import * as fs from "fs";
-import { LanguageData, Region, ScriptData } from "./dataHolderTypes";
+import { LanguageData, ScriptData } from "./dataHolderTypes";
 import iso3166 from "iso-3166-1";
 
 const COMMA_SEPARATOR = ", ";
@@ -45,6 +45,7 @@ function uncomma(str: string) {
   }
   return parts[1] + " " + parts[0];
 }
+
 type InternalLanguageData = {
   autonym: string;
   exonym: string;
@@ -120,28 +121,25 @@ function addLangtagsEntry(entry, langs) {
 }
 
 function parseLangtagsJson() {
-  // const fs = require("fs");
-  // const langTags = require("./langtags.json");
-
   const langs = {};
-  const langTags2 = langTags as any[]; // TODO clean up
+  const langTags = langtags as any[];
   const iso639_3CodeDetails = getIso639_3CodeDetails();
-  for (const entry of langTags2) {
+  for (const entry of langTags) {
     addLangtagsEntry(entry, langs);
 
+    // TODO I haven't finished implementing this:
     // Macrolanguage/specific language handling. See README
     if (iso639_3CodeDetails.has(entry.iso639_3)) {
       const iso639_3Codes = new Set([entry.iso639_3]);
       for (const tag of entry.tags || []) {
         const iso639_3Code = findPotentialIso639_3Code(tag);
         if (iso639_3Code && !iso639_3Codes.has(iso639_3Code)) {
-          // TODO check if a language is deprecated
           iso639_3Codes.add(iso639_3Code);
           addLangtagsEntry(
             {
               ...entry,
               code: iso639_3Code,
-              isForMacrolanguageDisambiguation: true, // TODO
+              isForMacrolanguageDisambiguation: true,
             },
             langs
           );
@@ -171,15 +169,13 @@ function parseLangtagsJson() {
             name: uncomma(scriptNames[scriptCode]),
           } as ScriptData;
         }),
-        names: [
-          // TODO do this better
-          ...new Set([...langData.names].map(uncomma)),
-        ].join(COMMA_SEPARATOR),
+        names: [...langData.names].join(COMMA_SEPARATOR),
         alternativeTags: [...langData.alternativeTags],
       } as LanguageData;
     }
   );
 
+  // TODO still in progress implementing this
   // // Macrolanguage/specific language handling. See README
   // for (const lang of reformattedLangs) {
   //   if (!macrolangs.has(lang.code)) {
@@ -207,17 +203,6 @@ function parseLangtagsJson() {
     code: "Latn",
     name: "Latin",
   };
-
-  //  add unknown language
-  //   TODO move this to the filter instead/
-  reformattedLangs.push({
-    autonym: undefined,
-    exonym: "Unknown",
-    code: "qaa",
-    regionNames: "",
-    scripts: [latinScriptData],
-    names: "",
-  } as LanguageData);
 
   //   write langs to a json file
   const data = JSON.stringify(reformattedLangs);

@@ -23,6 +23,7 @@ import { COLORS } from "./Colors";
 import { ScriptData } from "@languagepicker/ethnolib";
 
 function getAllRegionOptions() {
+  // TODO Congo is duplicated in this list for some reason
   return iso3166.all().map((region) => {
     return {
       label: region.country,
@@ -57,17 +58,18 @@ export const CustomizeLanguageDialog: React.FunctionComponent<{
   );
 
   // TODO replace all the { label: "", id: "" } with something else? just don't make uncontrolled inputs
+  const autocompleteOptionPlaceholder = { label: "", id: "" };
 
   // Store dialog state. Used to create a tag preview just inside the dialog, before saving anything
   // but these should not persist when the dialog is closed
   const [dialogSelectedScript, setDialogSelectedScriptCode] = React.useState<{
     label: string;
     id: string;
-  }>({ label: "", id: "" }); // Will be set by the useEffect below
+  }>(autocompleteOptionPlaceholder); // Will be set by the useEffect below
   const [dialogSelectedRegion, setDialogSelectedRegionCode] = React.useState<{
     label: string;
     id: string;
-  }>({ label: "", id: "" }); // Will be set by the useEffect below
+  }>(autocompleteOptionPlaceholder); // Will be set by the useEffect below
   const [dialogSelectedDialect, setDialogSelectedDialectCode] =
     React.useState<string>(""); // Will be set by the useEffect below
   React.useEffect(() => {
@@ -77,7 +79,7 @@ export const CustomizeLanguageDialog: React.FunctionComponent<{
             label: props.selectedScriptNode.nodeData.name,
             id: props.selectedScriptNode.nodeData.code,
           }
-        : { label: "", id: "" }
+        : autocompleteOptionPlaceholder
     );
     setDialogSelectedRegionCode(
       props.customizableLanguageDetails.region?.code
@@ -85,7 +87,7 @@ export const CustomizeLanguageDialog: React.FunctionComponent<{
             label: props.customizableLanguageDetails.region.name,
             id: props.customizableLanguageDetails.region.code,
           }
-        : { label: "", id: "" }
+        : autocompleteOptionPlaceholder
     );
     setDialogSelectedDialectCode(
       // if the user has not selected any language, not even the unlisted language button, then
@@ -232,7 +234,6 @@ export const CustomizeLanguageDialog: React.FunctionComponent<{
       )}
 
       {/* // TODO abstract out these buttons which are copied from app.tsx */}
-
       <DialogActions>
         <div
           id="buttons-container"

@@ -8,7 +8,6 @@ export type Region = {
 export type ScriptData = {
   code: string;
   name: string;
-  // TODO should the sample text be in here?
 };
 
 export type LanguageData = {

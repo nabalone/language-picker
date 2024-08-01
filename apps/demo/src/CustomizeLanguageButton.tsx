@@ -5,7 +5,6 @@ import EditIcon from "@mui/icons-material/Edit";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import { COLORS } from "./Colors";
 
-// TODO fix memo
 export const CustomizeLanguageButton: React.FunctionComponent<{
   currentTagPreview: string;
   showAsUnlistedLanguage: boolean;
@@ -44,7 +43,6 @@ export const CustomizeLanguageButton: React.FunctionComponent<{
             `}
           />
         )}
-        {/* TODO align button */}
         {showAsUnlistedLanguage ? "Customize" : "Create Unlisted Language"}
       </Typography>
       <div

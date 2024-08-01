@@ -10,7 +10,6 @@ interface LanguageCardProps extends EthnolibCardProps {
   languageCardData: LanguageData;
 }
 
-// TODO fix memo
 export const LanguageCard: React.FunctionComponent<LanguageCardProps> = memo(
   (props) => {
     return (

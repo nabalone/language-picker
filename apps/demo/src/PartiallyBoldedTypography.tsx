@@ -7,7 +7,6 @@ import React from "react";
 
 export const PartiallyBoldedTypography: React.FunctionComponent<{
   dangerouslySetDemarcatedText: string;
-  // TODO how to do this type...
 }> = ({ dangerouslySetDemarcatedText, children, ...props }) => {
   if (children) {
     // Typography cannot take both children and dangerouslySetInnerHTML

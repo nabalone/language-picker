@@ -113,8 +113,6 @@ export const useLanguagePicker = (
   const isReadyToSubmit =
     !!selectedLanguageNode &&
     (!!selectedScriptNode || selectedLanguageNode.childNodes?.length === 0);
-  // TODO  selecting langs with no scripts
-  // TODO rename childNodes to scripts?
 
   const onSearchStringChange = (searchString: string) => {
     setlanguageData([]);
@@ -128,7 +126,6 @@ export const useLanguagePicker = (
   };
 
   // details should only include the properties it wants to modify
-  // TODO test behavior with undefineds
   const saveCustomizableLanguageDetails = (
     details: CustomizableLanguageDetails
   ) => {
@@ -136,7 +133,7 @@ export const useLanguagePicker = (
     if (details.scriptOverride) {
       for (const scriptNode of selectedLanguageNode?.childNodes || []) {
         if (
-          stripDemarcation(scriptNode.id) ===
+          stripDemarcation(scriptNode.nodeData?.code || "") ===
           stripDemarcation(details.scriptOverride?.code || "")
         ) {
           // This script is a normal script choice for this language.
@@ -160,8 +157,7 @@ export const useLanguagePicker = (
     setCustomizableLanguageDetails(updatedDetails);
   };
 
-  // TODO should this still be async?
-  async function doSearchAndUpdate(
+  function doSearchAndUpdate(
     searchString: string,
     searchResultModifier?: (
       results: FuseResult<LanguageData>[],
@@ -180,7 +176,6 @@ export const useLanguagePicker = (
       const languageNode: OptionNode = {
         nodeData: language,
         id: stripDemarcation(language.code),
-        // TODO we should not be calling stripDemarcation again on ids
         nodeType: NodeType.Language,
         childNodes: [],
       };
