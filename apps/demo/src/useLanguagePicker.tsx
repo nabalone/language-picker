@@ -4,7 +4,7 @@ import {
   Region,
   searchForLanguage,
 } from "@languagepicker/ethnolib";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { stripDemarcation, stripResultMetadata } from "./searchResultModifiers";
 import { FuseResult } from "fuse.js";
 
@@ -85,7 +85,7 @@ export const useLanguagePicker = (
     searchString: string
   ) => LanguageData[]
 ) => {
-  const [languageData, setlanguageData] = useState([] as OptionNode[]);
+  const [searchString, setSearchString] = useState("");
   const [selectedLanguageNode, setSelectedLanguageNode] = useState<
     OptionNode | undefined
   >();
@@ -114,16 +114,49 @@ export const useLanguagePicker = (
     !!selectedLanguageNode &&
     (!!selectedScriptNode || selectedLanguageNode.childNodes?.length === 0);
 
-  const onSearchStringChange = (searchString: string) => {
-    setlanguageData([]);
-    setSelectedLanguageNode(undefined);
-    setSelectedScriptNode(undefined);
-    clearCustomizableLanguageDetails();
-    if (searchString.length > 1) {
-      // the query for one character is slow and probably not useful
-      doSearchAndUpdate(searchString, searchResultModifier);
+  const languageData = useMemo(() => {
+    if (searchString.length < 2) {
+      return [];
     }
-  };
+    return getModifiedSearchResults(searchString, searchResultModifier);
+  }, [searchString]);
+
+  // For reopening to a specific selection. We should then also set the search string
+  // such that the selected language is visible
+  // *Note that if the desired script is a script of the desired language, it must be
+  // passed in the scriptCode argument rather than as a script override
+  function reopenTo(
+    languageCode: string,
+    scriptCode?: string,
+    customDetails?: CustomizableLanguageDetails
+  ) {
+    // TODO what if there is a language code that is also the start of so many language names
+    // that the language card with that code isn't initially visible and one must scroll to see it?
+    // Do we need to make the language picker scroll to it? Seems like overkill to me
+    onSearchStringChange(languageCode);
+    // TODO this is inneficient... languageData won't get updated until rerender
+    // and so won't yet have the desired language node, so do a search for it
+    const tempLanguageData = getModifiedSearchResults(
+      languageCode,
+      searchResultModifier
+    );
+    const desiredLanguageNode = tempLanguageData.find(
+      (langNode) =>
+        stripDemarcation(langNode.nodeData?.code || "") === languageCode
+    );
+    if (desiredLanguageNode) {
+      setSelectedLanguageNode(desiredLanguageNode);
+      if (scriptCode) {
+        const desiredScriptNode = desiredLanguageNode.childNodes.find(
+          (scriptNode) => scriptNode.nodeData?.code === scriptCode
+        );
+        if (desiredScriptNode) {
+          setSelectedScriptNode(desiredScriptNode);
+        }
+      }
+    }
+    saveCustomizableLanguageDetails(customDetails || {});
+  }
 
   // details should only include the properties it wants to modify
   const saveCustomizableLanguageDetails = (
@@ -157,7 +190,7 @@ export const useLanguagePicker = (
     setCustomizableLanguageDetails(updatedDetails);
   };
 
-  function doSearchAndUpdate(
+  function getModifiedSearchResults(
     searchString: string,
     searchResultModifier?: (
       results: FuseResult<LanguageData>[],
@@ -192,11 +225,7 @@ export const useLanguagePicker = (
       languageNode.childNodes = scriptNodes;
       return languageNode;
     });
-
-    setlanguageData(languageData);
-    setSelectedLanguageNode(undefined);
-    setSelectedScriptNode(undefined);
-    clearCustomizableLanguageDetails();
+    return languageData;
   }
 
   const toggleSelectNode = (node: OptionNode) => {
@@ -239,15 +268,24 @@ export const useLanguagePicker = (
     clearCustomizableLanguageDetails();
   };
 
+  const onSearchStringChange = (searchString: string) => {
+    setSearchString(searchString);
+    setSelectedLanguageNode(undefined);
+    setSelectedScriptNode(undefined);
+    clearCustomizableLanguageDetails();
+  };
+
   return {
     languageData,
     selectedLanguageNode,
     selectedScriptNode,
     CustomizableLanguageDetails,
+    searchString,
     onSearchStringChange,
     toggleSelectNode,
     isReadyToSubmit,
     saveCustomizableLanguageDetails,
     selectUnlistedLanguage,
+    reopenTo,
   };
 };

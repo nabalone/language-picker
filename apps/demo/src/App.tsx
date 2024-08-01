@@ -30,7 +30,7 @@ import { debounce } from "lodash";
 import "./styles.css";
 import { bloomSearchResultModifier } from "./searchResultModifiers";
 import { CustomizeLanguageButton } from "./CustomizeLanguageButton";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CustomizeLanguageDialog } from "./CustomizeLanguageDialog";
 import LazyLoad from "react-lazyload";
 
@@ -40,16 +40,17 @@ function App() {
     selectedLanguageNode,
     selectedScriptNode,
     CustomizableLanguageDetails,
+    searchString,
     onSearchStringChange,
     toggleSelectNode,
     isReadyToSubmit,
     saveCustomizableLanguageDetails,
     selectUnlistedLanguage,
+    reopenTo,
   } = useLanguagePicker(bloomSearchResultModifier);
 
   const [customizeLanguageDialogOpen, setCustomizeLanguageDialogOpen] =
     useState(false);
-  const [searchString, setSearchString] = useState("");
 
   const currentTagPreview = createTag(
     selectedLanguageNode?.nodeData?.code,
@@ -65,6 +66,22 @@ function App() {
       },
     },
   });
+
+  // To demonstrate the ability to reopen to a desired state
+  useEffect(() => {
+    reopenTo("uzb", "Cyrl", {
+      displayName: "TestOverridenDisplayName",
+      // scriptOverride: {
+      //   code: "Chrs",
+      //   name: "Chorasmian",
+      // } as ScriptData,
+      region: {
+        code: "US",
+        name: "United States",
+      } as Region,
+      dialect: "testDialectName",
+    });
+  }, []);
 
   return (
     <ThemeProvider theme={theme}>
@@ -165,7 +182,6 @@ function App() {
                 fullWidth
                 onChange={(e) => {
                   debounce(async () => {
-                    setSearchString(e.target.value);
                     onSearchStringChange(e.target.value);
                   }, 0)();
                 }}
