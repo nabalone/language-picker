@@ -104,7 +104,7 @@ function simplifyEnglishResult(
           autonym: undefined, // because exonym is mandatory and we don't want to repeat it
           exonym: result.exonym, // "English",
           code: "eng",
-          regions: [],
+          regionNames: "",
           names: "",
           scripts: [latinScriptData],
           variants: "",
@@ -125,7 +125,7 @@ function simplifyFrenchResult(
           autonym: result.autonym, // this will be "Français", but we want to keep demarcation in case user typed "Francais"
           exonym: result.exonym, // "French"
           code: "fra",
-          regions: [],
+          regionNames: "",
           names: "",
           scripts: [latinScriptData],
           variants: "",

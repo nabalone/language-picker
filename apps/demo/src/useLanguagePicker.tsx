@@ -34,7 +34,7 @@ const UNLISTED_LANGUAGE_NODE = {
     code: "qaa",
     autonym: undefined,
     exonym: "Unknown Lanuage",
-    regions: [],
+    regionNames: "",
     scripts: [],
     alternativeTags: [],
     names: "",

@@ -49,7 +49,7 @@ type InternalLanguageData = {
   autonym: string;
   exonym: string;
   code: string;
-  regions: Set<string>; // ISO 3166 codes
+  regionNames: Set<string>; // ISO 3166 codes
   names: Set<string>;
   scripts: Set<string>;
   alternativeTags: Set<string>;
@@ -91,7 +91,7 @@ function addLangtagsEntry(entry, langs) {
       entry,
       langs[entry.iso639_3].autonym
     );
-    langs[entry.iso639_3].regions.add(entry.region);
+    langs[entry.iso639_3].regionNames.add(entry.regionname);
     langs[entry.iso639_3].scripts.add(entry.script);
     langs[entry.iso639_3].names = new Set([
       ...langs[entry.iso639_3].names,
@@ -105,17 +105,11 @@ function addLangtagsEntry(entry, langs) {
       langs[entry.iso639_3].isForMacrolanguageDisambiguation &&
       entry.isForMacrolanguageDisambiguation;
   } else {
-    // regionCodes is all the codes in entry.regions plus the code in entry.region
-    const regionCodes = new Set(entry.regions ?? []);
-    if (entry.region) {
-      regionCodes.add(entry.region);
-    }
-
     langs[entry.iso639_3] = {
       autonym: bestAutonym(entry, undefined),
       exonym: entry.name,
       code: entry.iso639_3 as string,
-      regions: new Set([entry.region]),
+      regionNames: new Set([entry.regionname]),
       names: getAllPossibleNames(entry),
       scripts: new Set([entry.script]),
       alternativeTags: new Set(entry.tags || []),
@@ -165,14 +159,12 @@ function parseLangtagsJson() {
       langData.names.delete(langData.autonym);
       langData.names.delete(langData.exonym);
       langData.names.forEach(uncomma);
+      langData.regionNames.forEach(uncomma);
       return {
         autonym: uncomma(langData.autonym),
         exonym: uncomma(langData.exonym),
         code: langData.code,
-        regions: [...langData.regions].map(
-          (regionCode) =>
-            ({ name: getRegionName(regionCode), code: regionCode } as Region)
-        ),
+        regionNames: [...langData.regionNames].join(COMMA_SEPARATOR),
         scripts: [...new Set([...langData.scripts])].map((scriptCode) => {
           return {
             code: scriptCode,
@@ -222,7 +214,7 @@ function parseLangtagsJson() {
     autonym: undefined,
     exonym: "Unknown",
     code: "qaa",
-    regions: [],
+    regionNames: "",
     scripts: [latinScriptData],
     names: "",
   } as LanguageData);

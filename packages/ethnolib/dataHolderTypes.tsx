@@ -15,7 +15,7 @@ export type LanguageData = {
   autonym: string | undefined;
   exonym: string;
   code: string; // ISO 639-3
-  regions: Region[];
+  regionNames: "";
   names: string; // comma-joined
   scripts: ScriptData[];
   variants?: string; // comma-joined

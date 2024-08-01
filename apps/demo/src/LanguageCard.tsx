@@ -39,7 +39,7 @@ export const LanguageCard: React.FunctionComponent<LanguageCardProps> = memo(
             variant="body2"
             dangerouslySetDemarcatedText={props.languageCardData.code}
           />
-          {props.languageCardData.regions?.length > 0 && (
+          {props.languageCardData.regionNames?.length > 0 && (
             <PartiallyBoldedTypography
               variant="h5"
               gutterBottom
@@ -51,9 +51,7 @@ export const LanguageCard: React.FunctionComponent<LanguageCardProps> = memo(
                 -webkit-box-orient: vertical;
                 overflow: hidden;
               `}
-              dangerouslySetDemarcatedText={`A language of ${props.languageCardData.regions
-                .map((region) => region.name)
-                .join(", ")}`}
+              dangerouslySetDemarcatedText={`A language of ${props.languageCardData.regionNames}`}
             />
           )}
           {props.languageCardData.names && (
