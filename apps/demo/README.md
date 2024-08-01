@@ -1,7 +1,7 @@
 # TODO
 
 npm run langtag-processing
-nx run @languagepicker/ethnolib:build
+nx run @languagepicker/index:build
 nx run @languagepicker/demo:dev
 
 # About macrolanguage handling

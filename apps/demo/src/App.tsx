@@ -1,6 +1,6 @@
 /** @jsxImportSource @emotion/react */
 import { css } from "@emotion/react";
-import { LanguageData, ScriptData } from "@languagepicker/ethnolib";
+import { LanguageData, ScriptData } from "@languagepicker/index";
 import { LanguageCard } from "./LanguageCard";
 import {
   AppBar,

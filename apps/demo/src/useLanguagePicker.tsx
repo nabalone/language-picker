@@ -3,7 +3,7 @@ import {
   ScriptData,
   Region,
   searchForLanguage,
-} from "@languagepicker/ethnolib";
+} from "@languagepicker/index";
 import { useMemo, useState } from "react";
 import { stripDemarcation, stripResultMetadata } from "./searchResultModifiers";
 import { FuseResult } from "fuse.js";

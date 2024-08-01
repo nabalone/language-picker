@@ -2,8 +2,8 @@ import {
   LanguageData,
   ScriptData,
   fieldsToSearch,
-} from "@languagepicker/ethnolib";
-// TODO ask reviewer about structuring imports from ethnolib index differently
+} from "@languagepicker/index";
+// TODO ask reviewer about structuring imports from index index differently
 import { FuseResult } from "fuse.js";
 
 import { cloneDeep } from "lodash";
@@ -228,7 +228,7 @@ function demarcateExactMatches(searchString: string, result: LanguageData) {
   // I think we'll live with only exact matches for this
   const lowerCasedSearchString = searchString.toLowerCase();
   for (const field of fieldsToSearch) {
-    //TODO better to look like ethnolib.fieldsToSearch
+    //TODO better to look like index.fieldsToSearch
     if (!result[field]) {
       continue;
     }
