@@ -74,7 +74,7 @@ export const CustomizeLanguageDialog: React.FunctionComponent<{
     React.useState<string>(""); // Will be set by the useEffect below
   React.useEffect(() => {
     setDialogSelectedScriptCode(
-      props.selectedScriptNode?.nodeData?.code
+      props.selectedScriptNode?.nodeData.code
         ? {
             label: props.selectedScriptNode.nodeData.name,
             id: props.selectedScriptNode.nodeData.code,
@@ -223,7 +223,7 @@ export const CustomizeLanguageDialog: React.FunctionComponent<{
               `}
             >
               {createTag(
-                props.selectedLanguageNode?.nodeData?.code,
+                props.selectedLanguageNode?.nodeData.code,
                 dialogSelectedScript?.id,
                 dialogSelectedRegion?.id,
                 dialogSelectedDialect

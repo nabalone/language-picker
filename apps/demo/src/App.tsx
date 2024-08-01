@@ -53,8 +53,8 @@ function App() {
     useState(false);
 
   const currentTagPreview = createTag(
-    selectedLanguageNode?.nodeData?.code,
-    selectedScriptNode?.nodeData?.code,
+    selectedLanguageNode?.nodeData.code,
+    selectedScriptNode?.nodeData.code,
     CustomizableLanguageDetails?.region?.code,
     selectedLanguageNode ? CustomizableLanguageDetails?.dialect : searchString
   );

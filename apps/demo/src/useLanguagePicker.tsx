@@ -14,7 +14,7 @@ export enum NodeType {
 }
 
 export type OptionNode = {
-  nodeData: LanguageData | ScriptData | null;
+  nodeData: LanguageData | ScriptData;
   id: string;
   nodeType: NodeType;
   childNodes: OptionNode[]; // In a language node, this will have all the relevant scripts as nodes
@@ -142,13 +142,13 @@ export const useLanguagePicker = (
     );
     const desiredLanguageNode = tempLanguageData.find(
       (langNode) =>
-        stripDemarcation(langNode.nodeData?.code || "") === languageCode
+        stripDemarcation(langNode.nodeData.code || "") === languageCode
     );
     if (desiredLanguageNode) {
       setSelectedLanguageNode(desiredLanguageNode);
       if (scriptCode) {
         const desiredScriptNode = desiredLanguageNode.childNodes.find(
-          (scriptNode) => scriptNode.nodeData?.code === scriptCode
+          (scriptNode) => scriptNode.nodeData.code === scriptCode
         );
         if (desiredScriptNode) {
           setSelectedScriptNode(desiredScriptNode);
@@ -166,7 +166,7 @@ export const useLanguagePicker = (
     if (details.scriptOverride) {
       for (const scriptNode of selectedLanguageNode?.childNodes || []) {
         if (
-          stripDemarcation(scriptNode.nodeData?.code || "") ===
+          stripDemarcation(scriptNode.nodeData.code || "") ===
           stripDemarcation(details.scriptOverride?.code || "")
         ) {
           // This script is a normal script choice for this language.
@@ -246,7 +246,7 @@ export const useLanguagePicker = (
         );
         setCustomizableLanguageDetails({
           displayName: stripDemarcation(
-            node.nodeData?.autonym || node.nodeData?.exonym || ""
+            node.nodeData.autonym || node.nodeData.exonym || ""
           ),
         } as CustomizableLanguageDetails);
         return;
