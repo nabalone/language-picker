@@ -1,7 +1,7 @@
 {
   "name": "@languagepicker/source",
   "workspaces": [
-    "packages/*",
+    "common/*",
     "apps/*"
   ],
   "version": "1.0.0",
