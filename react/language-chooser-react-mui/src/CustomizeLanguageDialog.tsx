@@ -160,7 +160,7 @@ export const CustomizeLanguageDialog: React.FunctionComponent<{
               setDialogSelectedScriptCode(newValue);
             }}
             disablePortal
-            id="combo-box-uicomponent"
+            id="combo-box-language-chooser-react-mui"
             options={getAllScriptOptions()}
             // sx={{ width: 300 }}
             renderInput={(params) => (
@@ -187,7 +187,7 @@ export const CustomizeLanguageDialog: React.FunctionComponent<{
               setDialogSelectedRegionCode(newValue);
             }}
             disablePortal
-            id="combo-box-uicomponent"
+            id="combo-box-language-chooser-react-mui"
             options={getAllRegionOptions()}
             renderInput={(params) => (
               <TextField {...params} id="customize-region-field" />
