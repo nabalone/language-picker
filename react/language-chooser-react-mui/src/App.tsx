@@ -26,11 +26,11 @@ import { COLORS } from "./Colors";
 import {
   useLanguagePicker,
   showUnlistedLanguageControls,
-} from "./useLanguagePicker";
-import { OptionNode, NodeType, createTag } from "./utils";
+} from "../../common/useLanguagePicker";
+import { OptionNode, NodeType, createTag } from "../../common/utils";
 import { debounce } from "lodash";
 import "./styles.css";
-import { bloomSearchResultModifier } from "./searchResultModifiers";
+import { bloomSearchResultModifier } from "../../common/searchResultModifiers";
 import { CustomizeLanguageButton } from "./CustomizeLanguageButton";
 import { useEffect, useState } from "react";
 import { CustomizeLanguageDialog } from "./CustomizeLanguageDialog";

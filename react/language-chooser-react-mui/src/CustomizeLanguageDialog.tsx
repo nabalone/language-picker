@@ -4,8 +4,12 @@ import Button from "@mui/material/Button";
 import DialogTitle from "@mui/material/DialogTitle";
 import Dialog from "@mui/material/Dialog";
 import Typography from "@mui/material/Typography";
-import { showUnlistedLanguageControls } from "./useLanguagePicker";
-import { CustomizableLanguageDetails, OptionNode, createTag } from "./utils";
+import { showUnlistedLanguageControls } from "../../common/useLanguagePicker";
+import {
+  CustomizableLanguageDetails,
+  OptionNode,
+  createTag,
+} from "../../common/utils";
 import {
   Autocomplete,
   DialogActions,
