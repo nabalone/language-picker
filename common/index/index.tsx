@@ -1,6 +1,6 @@
 import Fuse, { FuseResult } from "fuse.js";
 import languages from "./langs.json";
-import { LanguageData, ScriptData } from "./dataHolderTypes";
+import { LanguageData } from "./dataHolderTypes";
 
 const fuseSearchKeys = [
   { name: "autonym", weight: 10 },
@@ -34,4 +34,4 @@ export function searchForLanguage(
   return fuse.search(queryString);
 }
 
-export { LanguageData, ScriptData };
+export { LanguageData, ScriptData, Region } from "./dataHolderTypes";

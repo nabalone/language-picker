@@ -3,40 +3,13 @@ import {
   ScriptData,
   fieldsToSearch,
 } from "@languagepicker/index";
-// TODO ask reviewer about structuring imports from index index differently
 import { FuseResult } from "fuse.js";
-
-import { cloneDeep } from "lodash";
-
-export const START_OF_MATCH_MARKER = "[";
-export const END_OF_MATCH_MARKER = "]";
-
-function demarcateResults(results: FuseResult<LanguageData>[]) {
-  const resultsCopy = cloneDeep(results);
-  for (const result of resultsCopy) {
-    for (const match of result.matches) {
-      let lastTrasnferredIndex = 0;
-      const newValue = [];
-      for (const [matchStart, matchEnd] of match.indices) {
-        newValue.push(match.value.slice(lastTrasnferredIndex, matchStart));
-        newValue.push(START_OF_MATCH_MARKER);
-        newValue.push(match.value.slice(matchStart, matchEnd + 1));
-        newValue.push(END_OF_MATCH_MARKER);
-        lastTrasnferredIndex = matchEnd + 1;
-      }
-      newValue.push(match.value.slice(lastTrasnferredIndex));
-      result.item[match.key] = newValue.join("");
-    }
-  }
-  return resultsCopy;
-}
-
-export function stripDemarcation(str: string): string {
-  if (!str) return str;
-  return str
-    .replaceAll(START_OF_MATCH_MARKER, "")
-    .replaceAll(END_OF_MATCH_MARKER, "");
-}
+import {
+  demarcateResults,
+  END_OF_MATCH_MARKER,
+  START_OF_MATCH_MARKER,
+  stripDemarcation,
+} from "./utils";
 
 export function stripResultMetadata(
   results: FuseResult<LanguageData>[]
@@ -66,31 +39,6 @@ const SCRIPT_CODES_TO_EXCLUDE = new Set([
 
 const scriptFilter = (script: ScriptData) =>
   !SCRIPT_CODES_TO_EXCLUDE.has(script.code);
-
-export function bloomSearchResultModifier(
-  results: FuseResult<LanguageData>[],
-  searchString: string
-): LanguageData[] {
-  let modifiedResults = demarcateResults(results);
-  modifiedResults = stripResultMetadata(modifiedResults);
-  modifiedResults = prioritizeLangByKeywords(
-    ["english"],
-    searchString,
-    "eng",
-    modifiedResults
-  );
-  modifiedResults = prioritizeLangByKeywords(
-    ["french", "francais", "français"],
-    searchString,
-    "fra",
-    modifiedResults
-  );
-  modifiedResults = simplifyEnglishResult(searchString, modifiedResults);
-  modifiedResults = simplifyFrenchResult(searchString, modifiedResults);
-  modifiedResults = filterSpecialEntries(modifiedResults);
-  modifiedResults = filterScripts(scriptFilter, modifiedResults);
-  return modifiedResults;
-}
 
 const latinScriptData = { code: "Latn", name: "Latin" } as ScriptData;
 
@@ -139,10 +87,8 @@ function simplifyFrenchResult(
 // Compare codes, ignoring any demarcation or casing
 function codeMatches(code1: string, code2: string) {
   return (
-    code1
-      .replace(START_OF_MATCH_MARKER, "")
-      .replace(END_OF_MATCH_MARKER, "") ===
-    code2.replace(START_OF_MATCH_MARKER, "").replace(END_OF_MATCH_MARKER, "")
+    stripDemarcation(code1).toUpperCase() ===
+    stripDemarcation(code2).toUpperCase()
   );
 }
 
@@ -248,4 +194,29 @@ function demarcateExactMatches(searchString: string, result: LanguageData) {
     }
   }
   return result;
+}
+
+export function bloomSearchResultModifier(
+  results: FuseResult<LanguageData>[],
+  searchString: string
+): LanguageData[] {
+  let modifiedResults = demarcateResults(results);
+  modifiedResults = stripResultMetadata(modifiedResults);
+  modifiedResults = prioritizeLangByKeywords(
+    ["english"],
+    searchString,
+    "eng",
+    modifiedResults
+  );
+  modifiedResults = prioritizeLangByKeywords(
+    ["french", "francais", "français"],
+    searchString,
+    "fra",
+    modifiedResults
+  );
+  modifiedResults = simplifyEnglishResult(searchString, modifiedResults);
+  modifiedResults = simplifyFrenchResult(searchString, modifiedResults);
+  modifiedResults = filterSpecialEntries(modifiedResults);
+  modifiedResults = filterScripts(scriptFilter, modifiedResults);
+  return modifiedResults;
 }

@@ -1,6 +1,6 @@
 /** @jsxImportSource @emotion/react */
 import { css } from "@emotion/react";
-import { LanguageData, ScriptData } from "@languagepicker/index";
+import { LanguageData, ScriptData, Region } from "@languagepicker/index";
 import { LanguageCard } from "./LanguageCard";
 import {
   AppBar,
@@ -20,12 +20,10 @@ import SearchIcon from "@mui/icons-material/Search";
 import { ScriptCard } from "./ScriptCard";
 import { COLORS } from "./Colors";
 import {
-  OptionNode,
-  NodeType,
-  createTag,
   useLanguagePicker,
   showUnlistedLanguageControls,
 } from "./useLanguagePicker";
+import { OptionNode, NodeType, createTag } from "./utils";
 import { debounce } from "lodash";
 import "./styles.css";
 import { bloomSearchResultModifier } from "./searchResultModifiers";
@@ -86,7 +84,7 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <div
-        // TODO this is just a placeholder background
+        // This is just a placeholder background
         css={css`
           background-color: rgb(60, 60, 60);
           width: 100%;

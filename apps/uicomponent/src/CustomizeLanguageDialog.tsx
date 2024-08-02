@@ -4,12 +4,8 @@ import Button from "@mui/material/Button";
 import DialogTitle from "@mui/material/DialogTitle";
 import Dialog from "@mui/material/Dialog";
 import Typography from "@mui/material/Typography";
-import {
-  CustomizableLanguageDetails,
-  OptionNode,
-  createTag,
-  showUnlistedLanguageControls,
-} from "./useLanguagePicker";
+import { showUnlistedLanguageControls } from "./useLanguagePicker";
+import { CustomizableLanguageDetails, OptionNode, createTag } from "./utils";
 import {
   Autocomplete,
   DialogActions,
@@ -20,7 +16,7 @@ import { EthnolibTextInput } from "./EthnolibTextInput";
 import iso3166 from "iso-3166-1";
 import { iso15924 } from "iso-15924";
 import { COLORS } from "./Colors";
-import { ScriptData } from "@languagepicker/index";
+import { Region, ScriptData } from "@languagepicker/index";
 
 function getAllRegionOptions() {
   // TODO Congo is duplicated in this list for some reason

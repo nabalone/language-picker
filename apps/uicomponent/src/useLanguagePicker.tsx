@@ -1,74 +1,16 @@
-import {
-  LanguageData,
-  ScriptData,
-  Region,
-  searchForLanguage,
-} from "@languagepicker/index";
+import { LanguageData, searchForLanguage } from "@languagepicker/index";
 import { useMemo, useState } from "react";
-import { stripDemarcation, stripResultMetadata } from "./searchResultModifiers";
+import { stripResultMetadata } from "./searchResultModifiers";
 import { FuseResult } from "fuse.js";
-
-export enum NodeType {
-  Language = "language",
-  Script = "script",
-}
-
-export type OptionNode = {
-  nodeData: LanguageData | ScriptData;
-  id: string;
-  nodeType: NodeType;
-  childNodes: OptionNode[]; // In a language node, this will have all the relevant scripts as nodes
-};
-
-// TODO optional vs undefined
-export type CustomizableLanguageDetails = {
-  displayName?: string;
-  scriptOverride?: ScriptData;
-  region?: Region;
-  dialect?: string;
-};
-
-export const UNLISTED_LANGUAGE_NODE_ID = "unlisted-language";
-const UNLISTED_LANGUAGE_NODE = {
-  nodeData: {
-    code: "qaa",
-    autonym: undefined,
-    exonym: "Unknown Lanuage",
-    regionNames: "",
-    scripts: [],
-    alternativeTags: [],
-    names: "",
-  } as LanguageData,
-  id: UNLISTED_LANGUAGE_NODE_ID,
-  nodeType: NodeType.Language,
-  childNodes: [],
-} as OptionNode;
-const SCRIPT_OVERRIDE_NODE_ID = "script-override";
-
-// TODO put this somewhere else?
-export function createTag(
-  languageCode?: string,
-  scriptCode?: string,
-  regionCode?: string,
-  dialectCode?: string
-) {
-  if (!languageCode) {
-    // Unlisted language
-    return `qaa-x-${dialectCode}`;
-  }
-  // TODO watch out for null script override case
-  let tag = languageCode;
-  if (scriptCode) {
-    tag += `-${scriptCode}`;
-  }
-  if (regionCode) {
-    tag += `-${regionCode}`;
-  }
-  if (dialectCode) {
-    tag += `-${dialectCode}`;
-  }
-  return stripDemarcation(tag);
-}
+import {
+  OptionNode,
+  UNLISTED_LANGUAGE_NODE_ID,
+  SCRIPT_OVERRIDE_NODE_ID,
+  CustomizableLanguageDetails,
+  NodeType,
+  stripDemarcation,
+  UNLISTED_LANGUAGE_NODE,
+} from "./utils";
 
 // We show the unlisted language controls unles a language is selected
 export function showUnlistedLanguageControls(
@@ -79,6 +21,7 @@ export function showUnlistedLanguageControls(
     selectedLanguageNode.id === UNLISTED_LANGUAGE_NODE_ID
   );
 }
+
 export const useLanguagePicker = (
   searchResultModifier?: (
     results: FuseResult<LanguageData>[],
