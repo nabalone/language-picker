@@ -2,7 +2,7 @@
   "name": "@languagepicker/source",
   "workspaces": [
     "common/*",
-    "apps/*"
+    "react/*"
   ],
   "version": "1.0.0",
   "description": "",
