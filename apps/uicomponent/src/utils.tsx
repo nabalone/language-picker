@@ -1,4 +1,8 @@
-import { LanguageData, ScriptData, Region } from "@languagepicker/index";
+import {
+  LanguageData,
+  ScriptData,
+  Region,
+} from "@languagepicker/find-language";
 import { cloneDeep } from "lodash";
 import { FuseResult } from "fuse.js";
 

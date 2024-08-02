@@ -2,7 +2,7 @@ import {
   LanguageData,
   ScriptData,
   fieldsToSearch,
-} from "@languagepicker/index";
+} from "@languagepicker/find-language";
 import { FuseResult } from "fuse.js";
 import {
   demarcateResults,

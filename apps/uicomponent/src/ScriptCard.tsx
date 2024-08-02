@@ -1,6 +1,6 @@
 import { EthnolibCard, EthnolibCardProps } from "./EthnolibCard";
 import { Typography } from "@mui/material";
-import { ScriptData } from "@languagepicker/index";
+import { ScriptData } from "@languagepicker/find-language";
 
 interface ScriptCardProps extends EthnolibCardProps {
   scriptData: ScriptData;

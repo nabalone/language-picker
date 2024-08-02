@@ -16,7 +16,7 @@ import { EthnolibTextInput } from "./EthnolibTextInput";
 import iso3166 from "iso-3166-1";
 import { iso15924 } from "iso-15924";
 import { COLORS } from "./Colors";
-import { Region, ScriptData } from "@languagepicker/index";
+import { Region, ScriptData } from "@languagepicker/find-language";
 
 function getAllRegionOptions() {
   // TODO Congo is duplicated in this list for some reason

@@ -1,7 +1,7 @@
 # TODO
 
 npm run langtag-processing
-nx run @languagepicker/index:build
+nx run @languagepicker/find-language:build
 nx run @languagepicker/uicomponent:dev
 
 # About macrolanguage handling

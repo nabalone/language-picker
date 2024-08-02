@@ -1,7 +1,7 @@
 /** @jsxImportSource @emotion/react */
 import { css } from "@emotion/react";
 import { EthnolibCard, EthnolibCardProps } from "./EthnolibCard";
-import { LanguageData } from "@languagepicker/index";
+import { LanguageData } from "@languagepicker/find-language";
 import { memo } from "react";
 import { PartiallyBoldedTypography } from "./PartiallyBoldedTypography";
 

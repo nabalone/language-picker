@@ -1,4 +1,4 @@
-import { LanguageData, searchForLanguage } from "@languagepicker/index";
+import { LanguageData, searchForLanguage } from "@languagepicker/find-language";
 import { useMemo, useState } from "react";
 import { stripResultMetadata } from "./searchResultModifiers";
 import { FuseResult } from "fuse.js";
